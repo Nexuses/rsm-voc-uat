@@ -1,0 +1,76 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# next.js
+/.next/
+/out/
+
+# deploy build swap directories (scripts/deploy.sh)
+/.next-build/
+/.next-prev/
+/.next-failed/
+
+# production
+/build
+
+
+# misc
+.DS_Store
+*.pem
+
+# Annual CX Playwright Python env + render scratch files
+**/.venv/
+pdf-files/cx_report/_render.html
+pdf-files/cx_report/_measure.html
+cx_report/_render.html
+cx_report/_measure.html
+# Locally generated sample PDFs (fixtures only, never shipped)
+pdf-files/cx_report/out/
+public/samples/
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+!.env.example
+!.env.docker.example
+
+# vercel
+.vercel
+
+# local agent workspaces and generated configuration backups
+/.worktrees/
+/.superpowers/
+/backups/elevenlabs/
+/tmp/
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+*.pem
+rsm_voc_vps
+
+# Local CX walkthrough captures (live screenshots may include client data)
+/docs/dashboard-walkthrough/screenshots/
+/docs/dashboard-walkthrough/*.pdf

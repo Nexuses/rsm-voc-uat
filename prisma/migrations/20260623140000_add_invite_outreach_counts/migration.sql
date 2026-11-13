@@ -1,0 +1,3 @@
+ALTER TABLE "CsatSnapshot"
+ADD COLUMN "invitesSentCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN "inviteResponsesCount" INTEGER NOT NULL DEFAULT 0;

@@ -1,0 +1,358 @@
+.page {
+  --navy: #00153d;
+  --green: #3f9c35;
+  --green-d: #357f2d;
+  --body: #63666a;
+  --line: #d1d3d4;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  color: #231f20;
+  font-family: Prelo, Arial, Helvetica, sans-serif;
+  background: #fff;
+}
+
+/* RSM header: logo left, language switch right, thin divider below. */
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px clamp(20px, 5vw, 48px);
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brandLogo {
+  display: block;
+  width: auto;
+  height: 44px;
+  max-width: 220px;
+}
+
+.languageSwitcher {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
+.languageOption {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  color: var(--body);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  transition:
+    color 180ms ease,
+    background 180ms ease;
+}
+
+.languageOption:hover {
+  color: var(--navy);
+}
+
+.languageOption[aria-pressed="true"] {
+  color: #fff;
+  background: var(--navy);
+}
+
+.languageMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgb(0 21 61 / 8%);
+  border-radius: 2px;
+}
+
+.languageOption[aria-pressed="true"] .languageMark {
+  background: rgb(255 255 255 / 18%);
+}
+
+.body {
+  flex: 1;
+  width: 100%;
+  padding: clamp(28px, 4vw, 52px) clamp(20px, 5vw, 48px) clamp(32px, 4vw, 56px);
+  background: #fff;
+}
+
+.column {
+  width: min(980px, 100%);
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  color: var(--green);
+  font-size: 0.82rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0 0 14px;
+  color: var(--navy);
+  font-size: clamp(1.85rem, 3.2vw, 2.5rem);
+  font-weight: 750;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.intro {
+  max-width: 52rem;
+  margin: 0;
+  color: var(--body);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.intro strong {
+  color: #231f20;
+  font-weight: 700;
+}
+
+.card {
+  margin-top: clamp(22px, 3vw, 32px);
+  padding: clamp(24px, 4vw, 44px);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--green);
+  border-radius: 0 0 4px 4px;
+}
+
+.card h2 {
+  margin: 0 0 10px;
+  color: var(--navy);
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+  font-weight: 800;
+}
+
+.note,
+.success,
+.error {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.note {
+  color: var(--body);
+}
+
+.success {
+  padding: 12px 14px;
+  color: #1f5f1a;
+  background: rgb(63 156 53 / 10%);
+  border: 1px solid rgb(63 156 53 / 24%);
+  border-radius: 2px;
+}
+
+.error {
+  padding: 12px 14px;
+  color: #8a1f11;
+  background: rgb(180 40 20 / 5%);
+  border: 1px solid rgb(180 40 20 / 20%);
+  border-radius: 2px;
+}
+
+.quote {
+  margin: 16px 0 0;
+  padding: 14px 16px;
+  color: var(--navy);
+  background: #f3faf1;
+  border-inline-start: 3px solid var(--green);
+  white-space: pre-wrap;
+}
+
+.field,
+.fieldset {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 24px;
+}
+
+.field span,
+.fieldset legend {
+  color: var(--navy);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.field textarea,
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  color: #231f20;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 160px;
+}
+
+/* The video field holds a URL, so its own direction stays LTR — but inside the
+   Arabic (RTL) card the text should still hug the right edge with the rest of
+   the form instead of starting from the opposite side. */
+[dir="rtl"] .urlInput {
+  text-align: right;
+}
+
+.field textarea:focus-visible,
+.field input:focus-visible {
+  border-color: var(--navy);
+  outline: 2px solid rgb(0 21 61 / 18%);
+  outline-offset: 1px;
+}
+
+.fieldset {
+  padding: 0 0 0;
+  border: 0;
+}
+
+.fieldset legend {
+  padding: 0;
+  margin-bottom: 14px;
+}
+
+.fieldset label {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+  color: #231f20;
+  font-size: 1rem;
+  line-height: 1.45;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.fieldset label:last-child {
+  margin-bottom: 0;
+}
+
+.approve {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 4px 0 24px;
+  color: #231f20;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.fieldset input[type="radio"],
+.fieldset input[type="checkbox"],
+.approve input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  margin: 0;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primary,
+.secondary {
+  min-height: 48px;
+  padding: 0 24px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.primary {
+  color: #fff;
+  background: var(--green);
+  border: 1px solid var(--green);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--green-d);
+  border-color: var(--green-d);
+}
+
+.secondary {
+  color: #575756;
+  background: #fff;
+  border: 1px solid var(--navy);
+}
+
+.secondary:hover:not(:disabled) {
+  color: #fff;
+  background: var(--navy);
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.footer {
+  padding: 20px clamp(20px, 5vw, 48px);
+  color: var(--body);
+  font-size: 0.85rem;
+  text-align: center;
+  background: #fff;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 520px) {
+  .topBar {
+    justify-content: center;
+  }
+
+  .title {
+    font-size: 1.65rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .primary,
+  .secondary {
+    width: 100%;
+  }
+}

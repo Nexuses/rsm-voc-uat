@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSAT Dashboard – RSM Albazie & Co.</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── COLOURS ── */
+  :root {
+    --navy: #0D1B3E;
+    --green: #009A44;
+    --green-light: #57A000;
+    --green-mid: #4CAF50;
+    --blue: #00AEEF;
+    --grey-mid: #9E9E9E;
+    --grey-light: #bdbdbd;
+    --amber: #F59E0B;
+    --white: #ffffff;
+    --surface: #ffffff;
+    --bg: #f0f2f5;
+    --border: #e2e6ea;
+    --text-primary: #0D1B3E;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    background: var(--navy);
+    padding: 0 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--green);
+  }
+  .header-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 18px 0 20px;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .brand-avatar {
+    width: 36px; height: 36px;
+    background: var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .brand-info .firm { font-size: 13px; font-weight: 600; color: #fff; }
+  .brand-info .sub  { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 0.06em; text-transform: uppercase; }
+  .header-left { flex: 1; }
+  .header-title { font-size: 26px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+  .header-desc  { font-size: 13px; color: rgba(255,255,255,0.65); max-width: 480px; line-height: 1.5; }
+  .header-desc strong { color: #fff; font-weight: 600; }
+  .export-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    margin-top: 28px;
+  }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: space-between;
+  }
+  .filters-left { display: flex; align-items: center; gap: 24px; padding: 11px 0; }
+  .filter-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .filter-item .icon { font-size: 13px; }
+  .filter-item .val { font-weight: 600; color: var(--text-primary); }
+  .filter-item .val.green { color: var(--green); }
+  .filter-item .val.blue  { color: var(--blue); }
+  .filter-sep { color: var(--border); font-size: 16px; }
+  .last-updated { font-size: 12px; color: var(--text-secondary); padding: 11px 0; }
+  .last-updated strong { color: var(--text-primary); }
+
+  /* ── MAIN CONTENT ── */
+  .content { padding: 24px 32px; }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px 14px;
+    position: relative;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 10px 10px 0 0;
+  }
+  .kpi-card.kpi-green::before  { background: var(--green); }
+  .kpi-card.kpi-blue::before   { background: var(--blue); }
+  .kpi-card.kpi-navy::before   { background: var(--navy); }
+  .kpi-card.kpi-amber::before  { background: var(--amber); }
+  .kpi-card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .kpi-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); }
+  .kpi-icon  { font-size: 18px; color: var(--text-muted); }
+  .kpi-val {
+    font-size: 38px; font-weight: 800; color: var(--text-primary);
+    line-height: 1; margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .kpi-val sup { font-size: 20px; font-weight: 700; vertical-align: super; }
+  .kpi-desc { font-size: 11.5px; color: var(--text-secondary); line-height: 1.5; }
+  .kpi-desc strong { color: var(--green); font-weight: 600; }
+
+  /* ── SECTION ROW ── */
+  .section-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+  }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+  .card-sub   { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+
+  /* ── OVERALL CSAT CARD ── */
+  .csat-badge {
+    background: #e8f5ef;
+    color: var(--green);
+    font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .csat-header-row {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 4px;
+  }
+  .csat-donut-wrap {
+    display: flex; justify-content: center; align-items: center;
+    padding: 10px 0 14px;
+  }
+  .donut-container { position: relative; width: 150px; height: 150px; }
+  .donut-container svg { position: absolute; top: 0; left: 0; }
+  .donut-center {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .donut-pct { font-size: 32px; font-weight: 800; color: var(--green); line-height: 1; }
+  .donut-lbl { font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-top: 2px; }
+  .csat-foot {
+    display: flex; gap: 32px; border-top: 1px solid var(--border);
+    padding-top: 14px; margin-top: 4px;
+  }
+  .csat-foot-item .num { font-size: 20px; font-weight: 700; color: var(--text-primary); }
+  .csat-foot-item .lbl { font-size: 11px; color: var(--text-secondary); }
+
+  /* ── SENTIMENT DISTRIBUTION ── */
+  .sent-donut-row {
+    display: flex; align-items: center; gap: 24px;
+  }
+  .sent-donut-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+  .sent-donut-wrap svg { position: absolute; top: 0; left: 0; }
+  .sent-donut-center {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .sent-donut-num { font-size: 18px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+  .sent-donut-sub { font-size: 9px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.06em; text-transform: uppercase; }
+  .sent-list { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .sent-row { display: flex; align-items: center; justify-content: space-between; }
+  .sent-row-left { display: flex; align-items: center; gap: 7px; }
+  .sent-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .sent-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .sent-tag  { font-size: 10px; color: var(--text-secondary); }
+  .sent-right { text-align: right; }
+  .sent-count { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .sent-pct   { font-size: 10px; color: var(--text-secondary); }
+
+  /* ── RATING BREAKDOWN ── */
+  .breakdown-card { grid-column: span 1; }
+  .legend { display: flex; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .bar-rows { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row-item { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-size: 12px; color: var(--text-secondary); min-width: 90px; text-align: right; }
+  .bar-track { flex: 1; height: 18px; background: #f0f2f5; border-radius: 4px; overflow: hidden; }
+  .bar-fill  { height: 100%; border-radius: 4px; }
+  .bar-count { font-size: 12px; font-weight: 600; color: var(--text-primary); min-width: 28px; }
+
+  /* ── METHODOLOGY CARD ── */
+  .method-link { font-size: 11px; color: var(--blue); font-weight: 600; margin-bottom: 14px; display: inline-block; text-decoration: none; }
+  .method-icons { display: flex; gap: 0; margin-bottom: 8px; }
+  .mi { flex: 1; text-align: center; }
+  .mi svg { display: block; margin: 0 auto 5px; }
+  .mi-label { font-size: 10px; font-weight: 700; line-height: 1.3; }
+  .mi-label.c-green1 { color: #009A44; }
+  .mi-label.c-green2 { color: #57A000; }
+  .mi-label.c-blue   { color: #00AEEF; }
+  .mi-label.c-grey   { color: #9E9E9E; }
+  .method-bar { display: flex; border-radius: 3px; overflow: hidden; margin-bottom: 16px; }
+  .mb-seg { flex: 1; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+  .mb-seg.s5 { background: #009A44; }
+  .mb-seg.s4 { background: #57A000; }
+  .mb-seg.s3 { background: #00AEEF; }
+  .mb-seg.s2 { background: #9E9E9E; }
+  .mb-seg.s1 { background: #bdbdbd; }
+  .calc-section { display: flex; flex-direction: column; gap: 8px; }
+  .calc-pill-row { background: #e8f5ef; border: 1px solid #009A44; border-radius: 5px; padding: 6px 12px; display: inline-flex; align-items: center; }
+  .calc-pill-label { font-size: 11px; font-weight: 700; color: #009A44; }
+  .calc-formula-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--text-secondary);
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+  }
+  .calc-formula-row .sym { font-size: 14px; color: var(--text-muted); }
+  .calc-formula-row .highlight { color: #009A44; font-weight: 800; font-size: 13px; }
+  .calc-formula-row strong { color: var(--text-primary); font-weight: 700; }
+  .calc-result {
+    background: #009A44; color: #fff;
+    border-radius: 6px; padding: 7px 14px;
+    text-align: center; font-size: 16px; font-weight: 800;
+    white-space: nowrap;
+  }
+  .calc-result-sub { font-size: 9px; font-weight: 600; }
+  .calc-csat-pill {
+    background: #e8f5ef; border: 1px solid #009A44;
+    border-radius: 4px; padding: 5px 12px;
+    font-size: 11px; font-weight: 700; color: #009A44;
+    display: inline-block;
+  }
+
+  /* ── INSIGHTS ── */
+  .insights-section { margin-bottom: 20px; }
+  .insights-header { margin-bottom: 14px; }
+  .insights-title { font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+  .insights-sub   { font-size: 12px; color: var(--text-secondary); }
+  .insights-grid  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .insight-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  .insight-tag {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 3px 9px; border-radius: 20px;
+  }
+  .tag-strength   { background: #e8f5ef; color: #009A44; }
+  .tag-highlight  { background: #e0f3fc; color: #0077aa; }
+  .tag-watcharea  { background: #fef3e2; color: #d97706; }
+  .insight-big  { font-size: 30px; font-weight: 800; color: var(--text-primary); line-height: 1; margin-bottom: 5px; }
+  .insight-bold { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+  .insight-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.55; }
+  .insight-desc strong { color: var(--green); }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    background: #fff;
+    border-top: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .page-footer strong { color: var(--text-secondary); }
+
+  /* ── UTILS ── */
+  .flex-row { display: flex; align-items: center; gap: 8px; }
+  .mt4 { margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="page-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-brand">
+        <div class="brand-avatar">R</div>
+        <div class="brand-info">
+          <div class="firm">RSM Albazie &amp; Co.</div>
+          <div class="sub">Voice of Clients &nbsp;·&nbsp; CX</div>
+        </div>
+      </div>
+      <div class="header-title">CSAT Dashboard</div>
+      <div class="header-desc">
+        Voice of Clients customer experience report — measured against <strong>"Quality of Services Provided"</strong>. Period: 1 July 2024 – 30 June 2025.
+      </div>
+    </div>
+    <button class="export-btn">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 10v1.5A1.5 1.5 0 003.5 13h7A1.5 1.5 0 0012 11.5V10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Export Report
+    </button>
+  </div>
+</header>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filters-left">
+    <div class="filter-item">
+      <svg class="icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M1 5h11M4 1v2M9 1v2" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Period: <span class="val">1 July 2024 – 30 June 2025</span>
+    </div>
+    <span class="filter-sep">|</span>
+    <div class="filter-item">
+      <svg class="icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M6.5 3.5v3.5l2 1.5" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Scope: <span class="val green">Quality of Services Provided</span>
+    </div>
+    <span class="filter-sep">|</span>
+    <div class="filter-item">
+      <svg class="icon" width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 3.5h10M3 6.5h7M5 9.5h3" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Segment: <span class="val blue">All clients</span>
+    </div>
+  </div>
+  <div class="last-updated">Last updated: <strong>30 June 2025</strong></div>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="content">
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-green">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Overall CSAT</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#009A44" stroke-width="1.4"/><circle cx="6" cy="7.5" r="1.2" fill="#009A44"/><circle cx="12" cy="7.5" r="1.2" fill="#009A44"/><path d="M5.5 11 Q9 14 12.5 11" stroke="#009A44" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">97<sup>%</sup></div>
+      <div class="kpi-desc">Positive sentiment from the <strong>Quality of Services Provided</strong> survey.</div>
+    </div>
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Responses Received</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="#00AEEF" stroke-width="1.4"/><path d="M2 7l7 4.5L16 7" stroke="#00AEEF" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="kpi-val">205</div>
+      <div class="kpi-desc">Out of 247 surveys sent during the period.</div>
+    </div>
+    <div class="kpi-card kpi-navy">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Surveys Sent</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 9L9 2l7 7-7 7-7-7z" stroke="#0D1B3E" stroke-width="1.4"/><path d="M9 9v5" stroke="#0D1B3E" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="kpi-val">247</div>
+      <div class="kpi-desc">Distributed across all clients in the reporting window.</div>
+    </div>
+    <div class="kpi-card kpi-amber">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Response Rate</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><polyline points="2,13 6,8 10,10 15,4" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">83<sup>%</sup></div>
+      <div class="kpi-desc">205 of 247 clients participated.</div>
+    </div>
+  </div>
+
+  <!-- ROW 2: OVERALL CSAT + SENTIMENT DISTRIBUTION -->
+  <div class="section-row">
+
+    <!-- Overall CSAT -->
+    <div class="card">
+      <div class="csat-header-row">
+        <div>
+          <div class="card-title">Overall CSAT</div>
+          <div class="card-sub">Positive responses (4 + 5) ÷ total</div>
+        </div>
+        <span class="csat-badge">Annual result</span>
+      </div>
+      <div class="csat-donut-wrap">
+        <div class="donut-container">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#e8e8e8" stroke-width="11"/>
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#009A44" stroke-width="11"
+              stroke-dasharray="365.7 376.99"
+              stroke-dashoffset="94.25"
+              stroke-linecap="round"
+              transform="rotate(-90 75 75)"/>
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#e0e0e0" stroke-width="11"
+              stroke-dasharray="11.3 376.99"
+              stroke-dashoffset="-271.45"
+              transform="rotate(-90 75 75)"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">97%</div>
+            <div class="donut-lbl">CSAT</div>
+          </div>
+        </div>
+      </div>
+      <div class="csat-foot">
+        <div class="csat-foot-item">
+          <div class="num">199</div>
+          <div class="lbl">Positive (4 + 5)</div>
+        </div>
+        <div class="csat-foot-item">
+          <div class="num">205</div>
+          <div class="lbl">Total responses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sentiment Distribution -->
+    <div class="card">
+      <div class="card-title">Sentiment distribution</div>
+      <div class="card-sub">205 responses across the 5-point scale</div>
+      <div class="sent-donut-row">
+        <div class="sent-donut-wrap">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <!-- segments: 136/205=66.3% green, 63/205=30.7% green-light, 5/205=2.4% blue, 1/205=0.5% grey -->
+            <!-- circumference r=42: 2π×42=263.9 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#e8e8e8" stroke-width="9"/>
+            <!-- Very Satisfied 136 = 175 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#009A44" stroke-width="9"
+              stroke-dasharray="175 263.9"
+              stroke-dashoffset="66"
+              transform="rotate(-90 55 55)"/>
+            <!-- Satisfied 63 = 81 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#57A000" stroke-width="9"
+              stroke-dasharray="81 263.9"
+              stroke-dashoffset="-109"
+              transform="rotate(-90 55 55)"/>
+            <!-- Somewhat 5 = 6.3 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#00AEEF" stroke-width="9"
+              stroke-dasharray="6.3 263.9"
+              stroke-dashoffset="-190"
+              transform="rotate(-90 55 55)"/>
+            <!-- Dissatisfied 1 = 1.3 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#9E9E9E" stroke-width="9"
+              stroke-dasharray="1.3 263.9"
+              stroke-dashoffset="-196.3"
+              transform="rotate(-90 55 55)"/>
+          </svg>
+          <div class="sent-donut-center">
+            <div class="sent-donut-num">205</div>
+            <div class="sent-donut-sub">Responses</div>
+          </div>
+        </div>
+        <div class="sent-list">
+          <div class="sent-row">
+            <div class="sent-row-left">
+              <div class="sent-dot" style="background:#009A44"></div>
+              <div><div class="sent-name">Very Satisfied</div><div class="sent-tag">Positive</div></div>
+            </div>
+            <div class="sent-right"><div class="sent-count">136</div><div class="sent-pct">66.3%</div></div>
+          </div>
+          <div class="sent-row">
+            <div class="sent-row-left">
+              <div class="sent-dot" style="background:#57A000"></div>
+              <div><div class="sent-name">Satisfied</div><div class="sent-tag">Positive</div></div>
+            </div>
+            <div class="sent-right"><div class="sent-count">63</div><div class="sent-pct">30.7%</div></div>
+          </div>
+          <div class="sent-row">
+            <div class="sent-row-left">
+              <div class="sent-dot" style="background:#00AEEF"></div>
+              <div><div class="sent-name">Somewhat Satisfied</div><div class="sent-tag">Neutral</div></div>
+            </div>
+            <div class="sent-right"><div class="sent-count">5</div><div class="sent-pct">2.4%</div></div>
+          </div>
+          <div class="sent-row">
+            <div class="sent-row-left">
+              <div class="sent-dot" style="background:#9E9E9E"></div>
+              <div><div class="sent-name">Dissatisfied</div><div class="sent-tag">Negative</div></div>
+            </div>
+            <div class="sent-right"><div class="sent-count">1</div><div class="sent-pct">0.5%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: RATING BREAKDOWN + METHODOLOGY -->
+  <div class="section-row" style="margin-bottom:20px">
+
+    <!-- Rating Breakdown -->
+    <div class="card">
+      <div class="card-title">Rating breakdown</div>
+      <div class="card-sub">Count of responses by satisfaction rating</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#009A44"></div> Rating 5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#57A000"></div> Rating 4</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00AEEF"></div> Rating 3</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9E9E9E"></div> Rating 1–2</div>
+      </div>
+      <div class="bar-rows">
+        <div class="bar-row-item">
+          <div class="bar-label">Very Satisfied</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%;background:#009A44"></div></div>
+          <div class="bar-count">136</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Satisfied</div>
+          <div class="bar-track"><div class="bar-fill" style="width:46.3%;background:#57A000"></div></div>
+          <div class="bar-count">63</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Somewhat Satisfied</div>
+          <div class="bar-track"><div class="bar-fill" style="width:3.7%;background:#00AEEF;min-width:18px"></div></div>
+          <div class="bar-count">5</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Dissatisfied</div>
+          <div class="bar-track"><div class="bar-fill" style="width:0.7%;background:#9E9E9E;min-width:6px"></div></div>
+          <div class="bar-count">1</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Methodology & Calculation -->
+    <div class="card">
+      <div class="card-title">Methodology &amp; calculation</div>
+      <div class="card-sub">A 5-point scale — ratings of 4 (Satisfied) and 5 (Very Satisfied) are counted as positive.</div>
+      <a class="method-link" href="#">RSM in Kuwait &amp; Global CSAT Scale</a>
+      <div class="method-icons">
+        <div class="mi">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17.5" stroke="#009A44" stroke-width="1.6" fill="rgba(0,154,68,0.07)"/><circle cx="13.5" cy="16.5" r="2" fill="#009A44"/><circle cx="26.5" cy="16.5" r="2" fill="#009A44"/><path d="M11 23.5 Q20 30.5 29 23.5" stroke="#009A44" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M8 17.5 Q10.5 16 10 19" stroke="#009A44" stroke-width="1.2" stroke-linecap="round" fill="none"/><path d="M32 17.5 Q29.5 16 30 19" stroke="#009A44" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg>
+          <div class="mi-label c-green1">Very Satisfied<br>(5)</div>
+        </div>
+        <div class="mi">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17.5" stroke="#57A000" stroke-width="1.6" fill="rgba(87,160,0,0.07)"/><circle cx="13.5" cy="16.5" r="2" fill="#57A000"/><circle cx="26.5" cy="16.5" r="2" fill="#57A000"/><path d="M12 24.5 Q20 29.5 28 24.5" stroke="#57A000" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+          <div class="mi-label c-green2">Satisfied<br>(4)</div>
+        </div>
+        <div class="mi">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17.5" stroke="#00AEEF" stroke-width="1.6" fill="rgba(0,174,239,0.07)"/><circle cx="13.5" cy="16.5" r="2" fill="#00AEEF"/><circle cx="26.5" cy="16.5" r="2" fill="#00AEEF"/><line x1="12" y1="25.5" x2="28" y2="25.5" stroke="#00AEEF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <div class="mi-label c-blue">Somewhat<br>Satisfied (3)</div>
+        </div>
+        <div class="mi">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17.5" stroke="#9E9E9E" stroke-width="1.6" fill="rgba(0,0,0,0.03)"/><circle cx="13.5" cy="16.5" r="2" fill="#9E9E9E"/><circle cx="26.5" cy="16.5" r="2" fill="#9E9E9E"/><path d="M12 27 Q20 22.5 28 27" stroke="#9E9E9E" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+          <div class="mi-label c-grey">Dissatisfied<br>(1–2)</div>
+        </div>
+      </div>
+      <div class="method-bar">
+        <div class="mb-seg s5">5</div>
+        <div class="mb-seg s4">4</div>
+        <div class="mb-seg s3">3</div>
+        <div class="mb-seg s2">2</div>
+        <div class="mb-seg s1">1</div>
+      </div>
+      <div class="calc-section">
+        <div><span class="calc-pill-label" style="background:#e8f5ef;border:1px solid #009A44;padding:5px 12px;border-radius:5px;font-size:11px;font-weight:700;color:#009A44;display:inline-block">Total Positive (4+5)</span></div>
+        <div class="calc-formula-row">
+          <span class="sym">÷</span>
+          <strong>Total Responses</strong>
+          <span style="color:#9ca3af">136 + 63 =</span>
+          <span class="highlight">199</span>
+          <span style="color:#9ca3af">÷ 205 = 0.97 × 100</span>
+          <div class="calc-result">97%<div class="calc-result-sub">CSAT</div></div>
+        </div>
+        <div class="calc-formula-row">
+          <span class="sym">=</span>
+          <span class="calc-csat-pill">CSAT %</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOMER INSIGHTS -->
+  <div class="insights-section">
+    <div class="insights-header">
+      <div class="insights-title">Customer insights</div>
+      <div class="insights-sub">Key takeaways drawn directly from the Voice of Clients results.</div>
+    </div>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3C7.686 3 5 5.686 5 9c0 2.21 1.197 4.14 2.983 5.197L8 16h6l.017-1.803A6 6 0 0011 3z" stroke="#009A44" stroke-width="1.4" fill="none"/><path d="M8 18h6M9 20h4" stroke="#009A44" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="insight-tag tag-strength">Strength</span>
+        </div>
+        <div class="insight-big">97%</div>
+        <div class="insight-bold">Overwhelmingly positive sentiment</div>
+        <div class="insight-desc"><strong>199 of 205 clients</strong> rated us 4 or 5 on the 5-point scale, signalling consistently strong service quality.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8.5" stroke="#00AEEF" stroke-width="1.4"/><path d="M11 7v4.5l3 2" stroke="#00AEEF" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="insight-tag tag-highlight">Highlight</span>
+        </div>
+        <div class="insight-big">1</div>
+        <div class="insight-bold">Negligible dissatisfaction</div>
+        <div class="insight-desc">Only a single response landed in the Dissatisfied tier (rating 1–2) — under half a percent of all responses received.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8.5" stroke="#F59E0B" stroke-width="1.4"/><polyline points="7,14 9.5,10 12,12.5 15,8" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <span class="insight-tag tag-watcharea">Watch Area</span>
+        </div>
+        <div class="insight-big">83%</div>
+        <div class="insight-bold">Strong survey engagement</div>
+        <div class="insight-desc">205 of 247 surveys returned. A healthy participation rate that gives the CSAT score statistical weight.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="page-footer">
+  <span><strong>RSM Albazie &amp; Co.</strong> &nbsp;·&nbsp; Voice of Clients (CX) · 1 July 2024 – 30 June 2025</span>
+  <span>Page 4 — Measuring Client Satisfaction: Our Methodology</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>RSM in Kuwait : Voice of Clients (CX) Annual Report {{ fy }}</title>
+<style>{% include 'style.css' %}</style></head><body>
+{% include 'pages/p01.html.j2' %}
+{% include 'pages/p02.html.j2' %}
+{% include 'pages/p03.html.j2' %}
+{% include 'pages/p04.html.j2' %}
+{% include 'pages/p05.html.j2' %}
+{% include 'pages/p06.html.j2' %}
+{% include 'pages/p07.html.j2' %}
+{% for pg in tpages %}
+<section class="page" id="testimonials-{{ loop.index }}">
+<img class="plate" src="plates/{{ 'p08' if loop.first else 'p09' }}.png" alt="">
+{% if loop.first %}{% include 'pages/_voc_title.html.j2' %}{% endif %}
+{{ pg|safe }}
+</section>
+{% endfor %}
+{% include 'pages/p10.html.j2' %}
+{% include 'pages/p11.html.j2' %}
+{% include 'pages/p12.html.j2' %}
+</body></html>

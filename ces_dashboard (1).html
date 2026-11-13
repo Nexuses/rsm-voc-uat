@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CES Dashboard – RSM Albazie & Co.</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; font-size: 14px; line-height: 1.5; }
+  :root {
+    --navy: #0D1B3E; --green: #009A44; --green2: #57A000; --blue: #00AEEF;
+    --grey-mid: #9E9E9E; --grey-light: #bdbdbd; --amber: #F59E0B;
+    --surface: #ffffff; --border: #e2e6ea;
+    --text-primary: #0D1B3E; --text-secondary: #6b7280; --text-muted: #9ca3af;
+  }
+  .page-header { background: var(--navy); padding: 0 32px; position: relative; overflow: hidden; }
+  .page-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--green); }
+  .header-inner { display:flex; align-items:flex-start; justify-content:space-between; padding:18px 0 20px; }
+  .header-brand { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .brand-avatar { width:36px; height:36px; background:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff; }
+  .brand-info .firm { font-size:13px; font-weight:600; color:#fff; }
+  .brand-info .sub  { font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.06em; text-transform:uppercase; }
+  .header-title { font-size:26px; font-weight:700; color:#fff; margin-bottom:5px; }
+  .header-desc  { font-size:13px; color:rgba(255,255,255,0.65); max-width:520px; line-height:1.5; }
+  .header-desc strong { color:#fff; font-weight:600; }
+  .export-btn { background:var(--green); color:#fff; border:none; padding:9px 18px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px; white-space:nowrap; margin-top:28px; }
+
+  .filter-bar { background:#fff; border-bottom:1px solid var(--border); padding:0 32px; display:flex; align-items:center; justify-content:space-between; }
+  .filters-left { display:flex; align-items:center; gap:24px; padding:11px 0; }
+  .filter-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-secondary); }
+  .filter-item .val { font-weight:600; color:var(--text-primary); }
+  .filter-item .val.green { color:var(--green); }
+  .filter-item .val.blue  { color:var(--blue); }
+  .filter-sep { color:var(--border); font-size:16px; }
+  .last-updated { font-size:12px; color:var(--text-secondary); padding:11px 0; }
+  .last-updated strong { color:var(--text-primary); }
+
+  .content { padding:24px 32px; }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:20px; }
+  .kpi-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 14px 12px; position:relative; }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:10px 10px 0 0; }
+  .kpi-card.kpi-g1::before { background:#009A44; }
+  .kpi-card.kpi-g2::before { background:#57A000; }
+  .kpi-card.kpi-bl::before { background:#00AEEF; }
+  .kpi-card.kpi-gy::before { background:#9E9E9E; }
+  .kpi-card.kpi-lt::before { background:#bdbdbd; }
+  .kpi-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px; }
+  .kpi-label { font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-secondary); }
+  .kpi-val { font-size:28px; font-weight:800; color:var(--text-primary); line-height:1; margin-bottom:4px; letter-spacing:-0.02em; }
+  .kpi-desc { font-size:10.5px; color:var(--text-secondary); line-height:1.45; }
+
+  .section-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px 22px; }
+  .card-title { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
+  .card-sub   { font-size:12px; color:var(--text-secondary); margin-bottom:16px; }
+
+  /* CES gauge donut */
+  .ces-badge { background:#e8f5ef; color:var(--green); font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.04em; text-transform:uppercase; }
+  .ces-header-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+  .gauge-wrap { display:flex; justify-content:center; align-items:center; padding:10px 0 14px; flex-direction:column; gap:6px; }
+  .gauge-container { position:relative; width:160px; height:90px; }
+  .gauge-val { font-size:28px; font-weight:800; color:#0277BD; line-height:1; text-align:center; }
+  .gauge-unit { font-size:13px; color:var(--text-secondary); }
+  .gauge-scale { display:flex; justify-content:space-between; font-size:10px; color:var(--text-muted); width:160px; padding:0 2px; }
+  .ces-foot { display:flex; gap:24px; border-top:1px solid var(--border); padding-top:14px; margin-top:4px; }
+  .ces-foot-item .num { font-size:18px; font-weight:700; color:var(--text-primary); }
+  .ces-foot-item .lbl { font-size:11px; color:var(--text-secondary); }
+
+  /* Distribution */
+  .dist-row-wrap { display:flex; align-items:center; gap:24px; }
+  .dist-donut-wrap { position:relative; width:110px; height:110px; flex-shrink:0; }
+  .dist-donut-wrap svg { position:absolute; top:0; left:0; }
+  .dist-donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+  .dist-num { font-size:18px; font-weight:800; color:var(--text-primary); line-height:1; }
+  .dist-sub { font-size:9px; font-weight:600; color:var(--text-secondary); letter-spacing:0.06em; text-transform:uppercase; }
+  .dist-list { flex:1; display:flex; flex-direction:column; gap:10px; }
+  .dist-row { display:flex; align-items:center; justify-content:space-between; }
+  .dist-row-left { display:flex; align-items:center; gap:7px; }
+  .dist-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .dist-name { font-size:12px; font-weight:600; color:var(--text-primary); }
+  .dist-tag  { font-size:10px; color:var(--text-secondary); }
+  .dist-count { font-size:13px; font-weight:700; color:var(--text-primary); }
+  .dist-pct   { font-size:10px; color:var(--text-secondary); text-align:right; }
+
+  /* Bars */
+  .legend { display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-secondary); }
+  .legend-dot { width:8px; height:8px; border-radius:50%; }
+  .bar-rows { display:flex; flex-direction:column; gap:10px; }
+  .bar-row-item { display:flex; align-items:center; gap:10px; }
+  .bar-label { font-size:12px; color:var(--text-secondary); min-width:82px; text-align:right; }
+  .bar-track { flex:1; height:18px; background:#f0f2f5; border-radius:4px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:4px; }
+  .bar-count { font-size:12px; font-weight:600; color:var(--text-primary); min-width:28px; }
+
+  /* Methodology */
+  .method-link { font-size:11px; color:var(--blue); font-weight:600; margin-bottom:14px; display:inline-block; text-decoration:none; }
+  .mi { flex:1; text-align:center; }
+  .mi svg { display:block; margin:0 auto 5px; }
+  .mi-label { font-size:9px; font-weight:700; line-height:1.3; }
+  .mi-label.c1{color:#009A44;} .mi-label.c2{color:#57A000;} .mi-label.c3{color:#00AEEF;} .mi-label.c4{color:#9E9E9E;} .mi-label.c5{color:#bdbdbd;}
+  .method-bar { display:flex; border-radius:3px; overflow:hidden; margin-bottom:14px; }
+  .mb-seg { flex:1; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; }
+  .fml-box { border:1.5px solid #00AEEF; border-radius:4px; padding:9px 14px; display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .fml-lhs { font-size:10px; font-weight:700; color:#00AEEF; text-align:center; min-width:70px; line-height:1.35; }
+  .fml-op  { font-size:16px; color:#555; font-weight:300; }
+  .fml-mid { font-size:10px; color:#555; text-align:center; min-width:58px; line-height:1.35; }
+  .fml-eq  { font-size:13px; font-weight:700; color:#00AEEF; }
+  .fml-res { font-size:12px; font-weight:700; color:#009A44; }
+  .num-box { border:1.5px solid #00AEEF; border-radius:4px; padding:9px 14px; display:flex; align-items:center; gap:10px; }
+  .calc-row-wrap { display:flex; align-items:center; gap:20px; }
+  .eq-col  { font-size:26px; color:#555; font-weight:300; }
+
+  /* Gauge arc SVG */
+  .gauge-arc { display:flex; justify-content:center; margin-bottom:4px; }
+
+  /* Insights */
+  .insights-section { margin-bottom:20px; }
+  .insights-title { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:2px; }
+  .insights-sub   { font-size:12px; color:var(--text-secondary); margin-bottom:14px; }
+  .insights-grid  { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .insight-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 20px; }
+  .insight-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+  .insight-tag { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
+  .tag-strength  { background:#e8f5ef; color:#009A44; }
+  .tag-highlight { background:#e0f3fc; color:#0077aa; }
+  .tag-watch     { background:#fef3e2; color:#d97706; }
+  .insight-big  { font-size:30px; font-weight:800; color:var(--text-primary); line-height:1; margin-bottom:5px; }
+  .insight-bold { font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+  .insight-desc { font-size:12px; color:var(--text-secondary); line-height:1.55; }
+  .insight-desc strong { color:var(--green); }
+
+  .page-footer { background:#fff; border-top:1px solid var(--border); padding:12px 32px; display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); }
+  .page-footer strong { color:var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div style="flex:1">
+      <div class="header-brand">
+        <div class="brand-avatar">R</div>
+        <div class="brand-info">
+          <div class="firm">RSM Albazie &amp; Co.</div>
+          <div class="sub">Voice of Clients &nbsp;·&nbsp; CX</div>
+        </div>
+      </div>
+      <div class="header-title">CES Dashboard</div>
+      <div class="header-desc">
+        Voice of Clients effort report — measured against <strong>"Helpful, courteous and an active communicator?"</strong>. Period: 1 July 2024 – 30 June 2025.
+      </div>
+    </div>
+    <button class="export-btn">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 10v1.5A1.5 1.5 0 003.5 13h7A1.5 1.5 0 0012 11.5V10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Export Report
+    </button>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <div class="filters-left">
+    <div class="filter-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M1 5h11M4 1v2M9 1v2" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Period: <span class="val">1 July 2024 – 30 June 2025</span>
+    </div>
+    <span class="filter-sep">|</span>
+    <div class="filter-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M6.5 3.5v3.5l2 1.5" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Scope: <span class="val green">Helpful, courteous, active communicator</span>
+    </div>
+    <span class="filter-sep">|</span>
+    <div class="filter-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 3.5h10M3 6.5h7M5 9.5h3" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Segment: <span class="val blue">All clients</span>
+    </div>
+  </div>
+  <div class="last-updated">Last updated: <strong>30 June 2025</strong></div>
+</div>
+
+<main class="content">
+
+  <!-- 5 KPI CARDS for the 5 ratings -->
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-g1">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Rating 5 — Very Easy</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#009A44" stroke-width="1.3"/><circle cx="5.5" cy="6.5" r="1" fill="#009A44"/><circle cx="10.5" cy="6.5" r="1" fill="#009A44"/><path d="M5 10 Q8 13 11 10" stroke="#009A44" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">740</div>
+      <div class="kpi-desc">148 clients × 5</div>
+    </div>
+    <div class="kpi-card kpi-g2">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Rating 4 — Easy</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#57A000" stroke-width="1.3"/><circle cx="5.5" cy="6.5" r="1" fill="#57A000"/><circle cx="10.5" cy="6.5" r="1" fill="#57A000"/><path d="M5.5 10.5 Q8 12.5 10.5 10.5" stroke="#57A000" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">200</div>
+      <div class="kpi-desc">50 clients × 4</div>
+    </div>
+    <div class="kpi-card kpi-bl">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Rating 3 — Neutral</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#00AEEF" stroke-width="1.3"/><circle cx="5.5" cy="6.5" r="1" fill="#00AEEF"/><circle cx="10.5" cy="6.5" r="1" fill="#00AEEF"/><line x1="5.5" y1="11" x2="10.5" y2="11" stroke="#00AEEF" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </div>
+      <div class="kpi-val">6</div>
+      <div class="kpi-desc">2 clients × 3</div>
+    </div>
+    <div class="kpi-card kpi-gy">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Rating 2 — Difficult</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#9E9E9E" stroke-width="1.3"/><circle cx="5.5" cy="6.5" r="1" fill="#9E9E9E"/><circle cx="10.5" cy="6.5" r="1" fill="#9E9E9E"/><path d="M5.5 11.5 Q8 9.5 10.5 11.5" stroke="#9E9E9E" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">0</div>
+      <div class="kpi-desc">0 clients × 2</div>
+    </div>
+    <div class="kpi-card kpi-lt">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Rating 1 — Very Difficult</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#bdbdbd" stroke-width="1.3"/><circle cx="5.5" cy="6.5" r="1" fill="#bdbdbd"/><circle cx="10.5" cy="6.5" r="1" fill="#bdbdbd"/><path d="M5.5 11.5 Q8 9.5 10.5 11.5" stroke="#bdbdbd" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">5</div>
+      <div class="kpi-desc">5 clients × 1</div>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <!-- CES Score card -->
+    <div class="card">
+      <div class="ces-header-row">
+        <div>
+          <div class="card-title">Overall CES</div>
+          <div class="card-sub">Sum of all scores ÷ total responses</div>
+        </div>
+        <span class="ces-badge">Annual result</span>
+      </div>
+      <div class="gauge-wrap">
+        <!-- Semicircle gauge -->
+        <div class="gauge-container">
+          <svg width="160" height="90" viewBox="0 0 160 90">
+            <!-- track semicircle -->
+            <path d="M 10 85 A 70 70 0 0 1 150 85" fill="none" stroke="#e8e8e8" stroke-width="10" stroke-linecap="round"/>
+            <!-- colored segments: grey(1) bdbdbd, grey(2) 9E9E9E, blue(3) 00AEEF, green2(4) 57A000, green(5) 009A44 -->
+            <!-- Each segment covers 36° of the 180° arc -->
+            <!-- segment 1 (very difficult): 0-36° -->
+            <path d="M 10 85 A 70 70 0 0 1 34.3 34.3" fill="none" stroke="#d5d5d5" stroke-width="10" stroke-linecap="butt"/>
+            <!-- segment 2 (difficult): 36-72° -->
+            <path d="M 34.3 34.3 A 70 70 0 0 1 80 15" fill="none" stroke="#9E9E9E" stroke-width="10" stroke-linecap="butt"/>
+            <!-- segment 3 (neutral): 72-108° -->
+            <path d="M 80 15 A 70 70 0 0 1 125.7 34.3" fill="none" stroke="#00AEEF" stroke-width="10" stroke-linecap="butt"/>
+            <!-- segment 4 (easy): 108-144° -->
+            <path d="M 125.7 34.3 A 70 70 0 0 1 150 85" fill="none" stroke="#57A000" stroke-width="10" stroke-linecap="butt"/>
+            <!-- segment 5 extension — show 4.6 pointer -->
+            <!-- needle at ~4.6/5 = 165.6° from left = ~14.4° from end -->
+            <line x1="80" y1="85" x2="140" y2="57" stroke="#0D1B3E" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="80" cy="85" r="5" fill="#0D1B3E"/>
+            <!-- labels -->
+            <text x="6" y="85" font-size="9" fill="#bdbdbd" font-family="Arial" text-anchor="middle">0</text>
+            <text x="28" y="32" font-size="9" fill="#9E9E9E" font-family="Arial" text-anchor="middle">2</text>
+            <text x="80" y="13" font-size="9" fill="#00AEEF" font-family="Arial" text-anchor="middle">4</text>
+            <text x="132" y="32" font-size="9" fill="#57A000" font-family="Arial" text-anchor="middle">5</text>
+            <text x="154" y="85" font-size="9" fill="#009A44" font-family="Arial" text-anchor="middle">7</text>
+          </svg>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:30px;font-weight:800;color:#009A44;line-height:1">4.6 <span style="font-size:16px;font-weight:600;color:#6b7280">/ 5</span></div>
+          <div style="font-size:11px;color:#6b7280;margin-top:2px">Avg ease score</div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;width:160px;margin-top:4px"><span>0 Very Difficult</span><span>7 Very Easy</span></div>
+        </div>
+      </div>
+      <div class="ces-foot">
+        <div class="ces-foot-item"><div class="num">951</div><div class="lbl">Sum of all scores</div></div>
+        <div class="ces-foot-item"><div class="num">205</div><div class="lbl">Total responses</div></div>
+        <div class="ces-foot-item"><div class="num">75%</div><div class="lbl">Favorable (4+5)</div></div>
+      </div>
+    </div>
+
+    <!-- Distribution donut -->
+    <div class="card">
+      <div class="card-title">Score distribution</div>
+      <div class="card-sub">205 responses across the 5-point CES scale</div>
+      <div class="dist-row-wrap">
+        <div class="dist-donut-wrap">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#e8e8e8" stroke-width="9"/>
+            <!-- Rating 5: 148/205=72.2% = 190.5 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#009A44" stroke-width="9"
+              stroke-dasharray="190.5 263.9" stroke-dashoffset="66" transform="rotate(-90 55 55)"/>
+            <!-- Rating 4: 50/205=24.4% = 64.4 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#57A000" stroke-width="9"
+              stroke-dasharray="64.4 263.9" stroke-dashoffset="-124.5" transform="rotate(-90 55 55)"/>
+            <!-- Rating 3: 2/205=1% = 2.6 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#00AEEF" stroke-width="9"
+              stroke-dasharray="2.6 263.9" stroke-dashoffset="-188.9" transform="rotate(-90 55 55)"/>
+            <!-- Rating 1: 5/205=2.4% = 6.3 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#bdbdbd" stroke-width="9"
+              stroke-dasharray="6.3 263.9" stroke-dashoffset="-191.5" transform="rotate(-90 55 55)"/>
+          </svg>
+          <div class="dist-donut-center">
+            <div class="dist-num">205</div>
+            <div class="dist-sub">Responses</div>
+          </div>
+        </div>
+        <div class="dist-list">
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#009A44"></div><div><div class="dist-name">Very Easy (5)</div><div class="dist-tag">148 clients</div></div></div>
+            <div style="text-align:right"><div class="dist-count">148</div><div class="dist-pct">72.2%</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#57A000"></div><div><div class="dist-name">Easy (4)</div><div class="dist-tag">50 clients</div></div></div>
+            <div style="text-align:right"><div class="dist-count">50</div><div class="dist-pct">24.4%</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#00AEEF"></div><div><div class="dist-name">Neutral (3)</div><div class="dist-tag">2 clients</div></div></div>
+            <div style="text-align:right"><div class="dist-count">2</div><div class="dist-pct">1.0%</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#9E9E9E"></div><div><div class="dist-name">Difficult (2)</div><div class="dist-tag">0 clients</div></div></div>
+            <div style="text-align:right"><div class="dist-count">0</div><div class="dist-pct">0%</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#bdbdbd"></div><div><div class="dist-name">Very Difficult (1)</div><div class="dist-tag">5 clients</div></div></div>
+            <div style="text-align:right"><div class="dist-count">5</div><div class="dist-pct">2.4%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-title">Rating breakdown</div>
+      <div class="card-sub">Count of responses by ease rating</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#009A44"></div> Rating 5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#57A000"></div> Rating 4</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00AEEF"></div> Rating 3</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9E9E9E"></div> Rating 2</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#bdbdbd"></div> Rating 1</div>
+      </div>
+      <div class="bar-rows">
+        <div class="bar-row-item">
+          <div class="bar-label">Very Easy</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%;background:#009A44"></div></div>
+          <div class="bar-count">148</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Easy</div>
+          <div class="bar-track"><div class="bar-fill" style="width:33.8%;background:#57A000"></div></div>
+          <div class="bar-count">50</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Neutral</div>
+          <div class="bar-track"><div class="bar-fill" style="width:1.4%;background:#00AEEF;min-width:14px"></div></div>
+          <div class="bar-count">2</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Difficult</div>
+          <div class="bar-track"><div class="bar-fill" style="width:0.1%;background:#9E9E9E;min-width:4px"></div></div>
+          <div class="bar-count">0</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Very Difficult</div>
+          <div class="bar-track"><div class="bar-fill" style="width:3.4%;background:#bdbdbd;min-width:10px"></div></div>
+          <div class="bar-count">5</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Methodology &amp; calculation</div>
+      <div class="card-sub">Average score — the Global CES scale runs 0–7 (Very Difficult to Very Easy).</div>
+      <a class="method-link" href="#">Global CES Scale</a>
+
+      <div style="background:#f7f8fc;border:0.5px solid #dde;border-radius:6px;padding:12px 14px;margin-bottom:10px">
+        <div style="text-align:center;color:#009A44;font-size:11px;font-weight:700;margin-bottom:10px">Global CES Scale (0–7)</div>
+        <div style="display:flex;align-items:flex-end;margin-bottom:6px">
+          <div class="mi" style="flex:2">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16" stroke="#009A44" stroke-width="1.5" fill="rgba(0,154,68,0.07)"/><circle cx="12" cy="14.5" r="1.8" fill="#009A44"/><circle cx="24" cy="14.5" r="1.8" fill="#009A44"/><path d="M10.5 22 Q18 28 25.5 22" stroke="#009A44" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M8 15.5 Q10.5 14 10 17" stroke="#009A44" stroke-width="1.2" stroke-linecap="round" fill="none"/><path d="M28 15.5 Q25.5 14 26 17" stroke="#009A44" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg>
+            <div class="mi-label c1" style="font-size:10px">Very Easy<br>(5.6–7)</div>
+          </div>
+          <div class="mi" style="flex:2">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16" stroke="#57A000" stroke-width="1.5" fill="rgba(87,160,0,0.07)"/><circle cx="12" cy="14.5" r="1.8" fill="#57A000"/><circle cx="24" cy="14.5" r="1.8" fill="#57A000"/><path d="M12 22.5 Q18 27 24 22.5" stroke="#57A000" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+            <div class="mi-label c2" style="font-size:10px">Easy<br>(4.1–5.5)</div>
+          </div>
+          <div class="mi" style="flex:2">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16" stroke="#00AEEF" stroke-width="1.5" fill="rgba(0,174,239,0.07)"/><circle cx="12" cy="14.5" r="1.8" fill="#00AEEF"/><circle cx="24" cy="14.5" r="1.8" fill="#00AEEF"/><line x1="11" y1="23.5" x2="25" y2="23.5" stroke="#00AEEF" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="mi-label c3" style="font-size:10px">Neutral<br>(2.6–4)</div>
+          </div>
+          <div class="mi" style="flex:2">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16" stroke="#9E9E9E" stroke-width="1.5" fill="rgba(0,0,0,0.03)"/><circle cx="12" cy="14.5" r="1.8" fill="#9E9E9E"/><circle cx="24" cy="14.5" r="1.8" fill="#9E9E9E"/><path d="M11 26 Q18 21 25 26" stroke="#9E9E9E" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+            <div class="mi-label c4" style="font-size:10px">Difficult<br>(1.1–2.5)</div>
+          </div>
+          <div class="mi" style="flex:2">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16" stroke="#bdbdbd" stroke-width="1.5" fill="rgba(0,0,0,0.02)"/><circle cx="12" cy="14.5" r="1.8" fill="#bdbdbd"/><circle cx="24" cy="14.5" r="1.8" fill="#bdbdbd"/><path d="M11 26.5 Q18 21.5 25 26.5" stroke="#bdbdbd" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
+            <div class="mi-label c5" style="font-size:10px">Very Difficult<br>(0–1)</div>
+          </div>
+        </div>
+        <div class="method-bar" style="margin-bottom:0">
+          <div class="mb-seg" style="background:#009A44;flex:2">7</div>
+          <div class="mb-seg" style="background:#009A44;flex:2">6</div>
+          <div class="mb-seg" style="background:#57A000;flex:2">5</div>
+          <div class="mb-seg" style="background:#57A000;flex:2">4</div>
+          <div class="mb-seg" style="background:#00AEEF;flex:2">3</div>
+          <div class="mb-seg" style="background:#9E9E9E;flex:2">2</div>
+          <div class="mb-seg" style="background:#9E9E9E;flex:2">1</div>
+          <div class="mb-seg" style="background:#bdbdbd;flex:2">0</div>
+        </div>
+      </div>
+
+      <div class="calc-row-wrap">
+        <div style="flex:1">
+          <div class="fml-box">
+            <div class="fml-lhs">Sum of all<br>response scores</div>
+            <div class="fml-op">÷</div>
+            <div class="fml-mid">Total number<br>of responses</div>
+            <div class="fml-eq">=</div>
+            <div class="fml-res">Overall CES</div>
+          </div>
+          <div class="num-box">
+            <div style="font-size:16px;font-weight:800;color:#00AEEF;min-width:36px">951</div>
+            <div class="fml-op">÷</div>
+            <div style="font-size:18px;font-weight:800;color:#222;min-width:36px;text-align:center">205</div>
+            <div class="fml-eq">=</div>
+            <div style="font-size:16px;font-weight:800;color:#009A44">4.6</div>
+          </div>
+        </div>
+        <div class="eq-col">=</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:110px">
+          <!-- mini gauge -->
+          <div style="position:relative;width:100px;height:56px">
+            <svg width="100" height="56" viewBox="0 0 100 56">
+              <path d="M 6 52 A 44 44 0 0 1 94 52" fill="none" stroke="#e8e8e8" stroke-width="7"/>
+              <path d="M 6 52 A 44 44 0 0 1 21.5 20.8" fill="none" stroke="#d5d5d5" stroke-width="7" stroke-linecap="butt"/>
+              <path d="M 21.5 20.8 A 44 44 0 0 1 50 8" fill="none" stroke="#9E9E9E" stroke-width="7" stroke-linecap="butt"/>
+              <path d="M 50 8 A 44 44 0 0 1 78.5 20.8" fill="none" stroke="#00AEEF" stroke-width="7" stroke-linecap="butt"/>
+              <path d="M 78.5 20.8 A 44 44 0 0 1 94 52" fill="none" stroke="#57A000" stroke-width="7" stroke-linecap="butt"/>
+              <!-- needle at 4.6 -->
+              <line x1="50" y1="52" x2="89" y2="32" stroke="#0D1B3E" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="50" cy="52" r="4" fill="#0D1B3E"/>
+              <text x="3" y="55" font-size="8" fill="#bdbdbd" font-family="Arial">0</text>
+              <text x="17" y="20" font-size="8" fill="#9E9E9E" font-family="Arial">2</text>
+              <text x="46" y="7" font-size="8" fill="#00AEEF" font-family="Arial">4</text>
+              <text x="75" y="20" font-size="8" fill="#57A000" font-family="Arial">5</text>
+              <text x="90" y="55" font-size="8" fill="#009A44" font-family="Arial">7</text>
+            </svg>
+          </div>
+          <div style="font-size:20px;font-weight:800;color:#009A44;line-height:1;text-align:center">4.6 CES</div>
+          <div style="font-size:10px;color:#444;font-weight:600;text-align:center;line-height:1.4">Customer Effort Score<br>(CES) Annual Result</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insights-section">
+    <div class="insights-title">Client insights</div>
+    <div class="insights-sub">Key takeaways drawn directly from the Voice of Clients CES results.</div>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3C7.686 3 5 5.686 5 9c0 2.21 1.197 4.14 2.983 5.197L8 16h6l.017-1.803A6 6 0 0011 3z" stroke="#009A44" stroke-width="1.4" fill="none"/><path d="M8 18h6M9 20h4" stroke="#009A44" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="insight-tag tag-strength">Strength</span>
+        </div>
+        <div class="insight-big">4.6</div>
+        <div class="insight-bold">Clients find it easy to work with us</div>
+        <div class="insight-desc"><strong>198 of 205 clients</strong> rated ease at 4 or 5, confirming streamlined processes and responsive communication.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8.5" stroke="#00AEEF" stroke-width="1.4"/><path d="M11 7v4.5l3 2" stroke="#00AEEF" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="insight-tag tag-highlight">Highlight</span>
+        </div>
+        <div class="insight-big">72%</div>
+        <div class="insight-bold">Majority rated maximum ease</div>
+        <div class="insight-desc">148 clients gave a top score of 5, signalling that working with RSM in Kuwait feels effortless for most.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8.5" stroke="#F59E0B" stroke-width="1.4"/><polyline points="7,14 9.5,10 12,12.5 15,8" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <span class="insight-tag tag-watch">Watch Area</span>
+        </div>
+        <div class="insight-big">5</div>
+        <div class="insight-bold">Very Difficult responses — follow up</div>
+        <div class="insight-desc">5 clients rated the experience as Very Difficult (1). Each represents a recovery and process-improvement opportunity.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="page-footer">
+  <span><strong>RSM Albazie &amp; Co.</strong> &nbsp;·&nbsp; Voice of Clients (CX) · 1 July 2024 – 30 June 2025</span>
+  <span>Page 6 — Measuring Ease of Service: Our Methodology</span>
+</footer>
+
+</body>
+</html>

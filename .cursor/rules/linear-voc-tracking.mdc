@@ -1,0 +1,16 @@
+---
+description: Track RSM VoC work in Linear (create/update issues with Todo → In Progress → Done)
+alwaysApply: true
+---
+
+# Linear tracking for RSM VoC
+
+When the user asks for implementation, debugging, or operational work on this repo:
+
+1. Use Linear MCP (`plugin-linear-linear`) against project **RSM in Kuwait Survey - VOC** (team **Nexuses**).
+2. **Before starting**: create an issue (or reuse an existing matching open one). Set status **Todo**, then **In Progress** when work begins. Assign to `me` unless told otherwise.
+3. Put a short problem/plan in the issue description. Link the issue URL in chat.
+4. **When done**: move the issue to **Done**. Add a brief resolution note (root cause + fix + verification). Do not put secrets, passwords, or API keys in Linear.
+5. Skip Linear only for trivial Q&A with no repo/ops change, unless the user asks for an issue anyway.
+
+Statuses on Nexuses: Backlog, Todo, In Progress, Review, Done, Canceled, Duplicate.

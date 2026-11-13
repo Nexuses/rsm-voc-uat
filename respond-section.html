@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose how you would like to respond</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--vx-blue:#009CDE;--vx-green:#3F9C35;--vx-mid:#00153D;--vx-dg:#63666A;--vx-mg:#888B8D;--vx-lg:#CCCFCF;--vx-line:#DADCDE}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Prelo','Inter',Calibri,Arial,sans-serif;background:#fff;color:var(--vx-mid);padding:48px 70px}
+
+/* Section header (already on the live page, kept here for context) */
+.vx-section{max-width:1780px;margin:0 auto}
+.vx-badge{display:inline-flex;align-items:center;justify-content:center;width:43px;height:43px;background:var(--vx-mid);color:#fff;font-size:13px;font-weight:800}
+.vx-h2{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:20px 0 14px}
+.vx-sub{font-size:19px;color:var(--vx-dg);margin-bottom:34px}
+
+/* Tiles */
+.vx-tiles{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--vx-line)}
+.vx-tile{padding:66px;display:flex;flex-direction:column;min-width:0}
+.vx-tile + .vx-tile{border-left:1px solid var(--vx-line)}
+.vx-voice{background:radial-gradient(120% 90% at 12% 8%,rgba(63,156,53,.14),rgba(63,156,53,0) 60%),#fff}
+.vx-typed{background:radial-gradient(110% 90% at 85% 15%,rgba(0,21,61,.07),rgba(0,21,61,0) 60%),#fff}
+.vx-h3{font-size:29px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.vx-pills{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.vx-pill{padding:6px 14px;border:1px solid var(--vx-lg);border-radius:999px;font-size:14px;font-weight:700;color:var(--vx-dg);background:rgba(255,255,255,.65)}
+.vx-voice .vx-pill{color:var(--vx-green);border-color:#BFE0BA;background:#EAF3E8}
+.vx-bottom{margin-top:auto;padding-top:56px}
+.vx-desc{font-size:19px;color:var(--vx-dg);margin-top:14px}
+.vx-go{margin-top:30px;width:55px;height:55px;border-radius:50%;border:1px solid var(--vx-lg);background:#fff;display:inline-flex;align-items:center;justify-content:center;color:var(--vx-mid);text-decoration:none;transition:background .2s,color .2s,box-shadow .2s,transform .2s}
+.vx-go:hover{background:var(--vx-mid);color:#fff;box-shadow:0 8px 18px rgba(0,21,61,.2);transform:translateY(-2px)}
+.vx-go:focus-visible{outline:2px solid var(--vx-blue);outline-offset:3px}
+
+/* Voice tile: animated wave */
+.vx-wave{display:block;width:100%;max-width:520px;height:80px;margin-top:30px}
+
+/* Typed tile: rating preview */
+.vx-rate{background:#fff;border:1px solid #E3E5E7;box-shadow:0 10px 28px rgba(0,21,61,.10),0 2px 6px rgba(0,21,61,.06);padding:18px 24px;margin-top:26px;user-select:none;-webkit-user-select:none}
+.vx-track{position:relative;height:60px;cursor:pointer;touch-action:pan-y;--vx-c:#63666A}
+.vx-rail{position:absolute;left:10%;right:10%;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:#E6E8EA}
+.vx-fill{position:absolute;left:10%;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--vx-c);width:0;transition:width .35s ease,background .25s}
+.vx-n{position:absolute;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border:0;background:none;padding:0;border-radius:50%;color:var(--vx-lg);cursor:pointer;transition:color .25s,transform .25s}
+.vx-n svg{display:block;width:100%;height:100%;overflow:visible;transition:filter .25s}
+.vx-n .bg{fill:#fff;transition:fill .25s}
+.vx-n:hover{transform:scale(1.12)}
+.vx-n.done{color:var(--n)}
+.vx-n.on{color:var(--n);transform:scale(1.2)}
+.vx-n.on .bg{fill:color-mix(in srgb,var(--n) 14%,#fff)}
+.vx-n.on svg{filter:drop-shadow(0 4px 6px rgba(0,21,61,.2))}
+.vx-n:focus-visible{outline:2px solid var(--vx-blue);outline-offset:3px}
+
+/* Typed tile: five guided steps */
+.vx-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:18px}
+.vx-step{height:58px;display:flex;align-items:center;justify-content:center;background:#F3F4F6;border:1px solid #E1E3E5;font-size:14px;font-weight:800;transition:transform .2s,box-shadow .2s,background .2s}
+.vx-step:hover{transform:translateY(-2px);background:#fff;box-shadow:0 6px 14px rgba(0,21,61,.10)}
+
+@media(max-width:900px){
+  body{padding:32px 20px}
+  .vx-h2{font-size:30px}
+  .vx-tiles{grid-template-columns:1fr}
+  .vx-tile{padding:36px 24px}
+  .vx-tile + .vx-tile{border-left:0;border-top:1px solid var(--vx-line)}
+  .vx-bottom{padding-top:36px}
+}
+@media(max-width:520px){
+  .vx-rate{padding:14px 10px}
+  .vx-n{width:38px;height:38px;margin:-19px 0 0 -19px}
+  .vx-step{height:46px}
+  .vx-h3{font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){
+  .vx-fill,.vx-n,.vx-n svg,.vx-go,.vx-step{transition:none}
+}
+</style>
+</head>
+<body>
+
+<section class="vx-section">
+  <span class="vx-badge">01</span>
+  <h2 class="vx-h2">Choose how you would like to respond</h2>
+  <p class="vx-sub">Choose the format that feels most natural. Both options collect the same three service metrics.</p>
+
+  <!-- Replace only the two .vx-tile blocks below on the live page -->
+  <div class="vx-tiles">
+
+    <!-- Voice survey tile -->
+    <div class="vx-tile vx-voice" id="vxVoice">
+      <h3 class="vx-h3">About 3 minutes</h3>
+      <svg class="vx-wave" id="vxWave" viewBox="0 0 520 80" preserveAspectRatio="none" role="img" aria-label="Animated voice waveform"></svg>
+      <div class="vx-pills"><span class="vx-pill">CSAT</span><span class="vx-pill">CES</span><span class="vx-pill">NPS</span></div>
+      <div class="vx-bottom">
+        <h3 class="vx-h3">Take voice survey</h3>
+        <p class="vx-desc">Talk with our RSM in Kuwait survey host</p>
+        <a class="vx-go" href="#voice" aria-label="Take voice survey">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Typed survey tile -->
+    <div class="vx-tile vx-typed">
+      <h3 class="vx-h3">Five guided steps</h3>
+
+      <div class="vx-rate">
+        <div class="vx-track" id="vxTrack" role="radiogroup" aria-label="Preview of the rating scale">
+          <div class="vx-rail"></div>
+          <div class="vx-fill" id="vxFill"></div>
+        </div>
+      </div>
+
+      <div class="vx-steps" aria-hidden="true">
+        <div class="vx-step">1</div><div class="vx-step">2</div><div class="vx-step">3</div><div class="vx-step">4</div><div class="vx-step">5</div>
+      </div>
+      <div class="vx-pills"><span class="vx-pill">CSAT</span><span class="vx-pill">CES</span><span class="vx-pill">NPS</span></div>
+
+      <div class="vx-bottom">
+        <h3 class="vx-h3">Take typed survey</h3>
+        <p class="vx-desc">Complete each question at your own pace</p>
+        <a class="vx-go" href="#typed" aria-label="Take typed survey">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Typed tile: interactive face slider ---------- */
+  var COLORS = ['#63666A', '#63666A', '#009CDE', '#3F9C35', '#3F9C35'];
+  var track = document.getElementById('vxTrack');
+  var fill = document.getElementById('vxFill');
+  var nodes = [];
+  var cur = 2;
+  var timer = null;
+
+  function mouth(i) {
+    var n = (i / 4) * 10, e = 15.5 - n * 0.15, c = 11.5 + n * 0.8;
+    return 'M8 ' + e.toFixed(2) + ' Q12 ' + c.toFixed(2) + ' 16 ' + e.toFixed(2);
+  }
+
+  for (var i = 0; i < 5; i++) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'vx-n';
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-label', 'Rating ' + (i + 1) + ' of 5');
+    b.style.left = (10 + i * 20) + '%';
+    b.style.setProperty('--n', COLORS[i]);
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true">' +
+      '<circle class="bg" cx="12" cy="12" r="10.5"/>' +
+      '<circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>' +
+      '<circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>' +
+      '<path d="' + mouth(i) + '"/></svg>';
+    (function (idx) { b.addEventListener('click', function () { stop(); set(idx); }); })(i);
+    track.appendChild(b);
+    nodes.push(b);
+  }
+
+  function set(i) {
+    cur = Math.max(0, Math.min(4, i));
+    track.style.setProperty('--vx-c', COLORS[cur]);
+    fill.style.width = (cur * 20) + '%';
+    nodes.forEach(function (n, j) {
+      n.classList.toggle('done', j <= cur);
+      n.classList.toggle('on', j === cur);
+      n.setAttribute('aria-checked', j === cur ? 'true' : 'false');
+      n.tabIndex = j === cur ? 0 : -1;
+    });
+  }
+
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+
+  function pick(e) {
+    var r = track.getBoundingClientRect();
+    set(Math.round(((e.clientX - r.left) / r.width - 0.1) / 0.2));
+  }
+
+  var down = false;
+  track.addEventListener('pointerdown', function (e) {
+    stop(); down = true;
+    try { track.setPointerCapture(e.pointerId); } catch (x) {}
+    pick(e);
+  });
+  track.addEventListener('pointermove', function (e) { if (down) pick(e); });
+  track.addEventListener('pointerup', function () { down = false; });
+  track.addEventListener('pointercancel', function () { down = false; });
+
+  track.addEventListener('keydown', function (e) {
+    var d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+    if (e.key === 'Home') d = -9;
+    if (e.key === 'End') d = 9;
+    if (!d) return;
+    e.preventDefault(); stop();
+    set(cur + d);
+    nodes[cur].focus();
+  });
+
+  set(2);
+  if (!reduce) {
+    var seq = [3, 4, 3, 2, 1, 0, 1, 2], k = 0;
+    timer = setInterval(function () { set(seq[k++ % seq.length]); }, 1100);
+  }
+
+  /* ---------- Voice tile: animated wave ---------- */
+  var svg = document.getElementById('vxWave');
+  var voice = document.getElementById('vxVoice');
+  var NS = 'http://www.w3.org/2000/svg', N = 9, lines = [];
+  var G = [63, 156, 53], B = [0, 156, 222];
+  for (var j = -N; j <= N; j++) {
+    var t = Math.abs(j) / N;
+    var p = document.createElementNS(NS, 'path');
+    p.setAttribute('fill', 'none');
+    p.setAttribute('vector-effect', 'non-scaling-stroke');
+    p.setAttribute('stroke', 'rgb(' + [0, 1, 2].map(function (c) { return Math.round(G[c] + (B[c] - G[c]) * t); }).join(',') + ')');
+    p.setAttribute('stroke-width', '1');
+    p.setAttribute('stroke-opacity', (0.35 + 0.6 * (1 - t)).toFixed(2));
+    svg.appendChild(p);
+    lines.push([p, j / N]);
+  }
+  var time = 0, amp = 1, ampT = 1;
+  voice.addEventListener('mouseenter', function () { ampT = 1.35; });
+  voice.addEventListener('mouseleave', function () { ampT = 1; });
+
+  function draw() {
+    var W = 520, H = 80;
+    lines.forEach(function (o) {
+      var d = '';
+      for (var x = 0; x <= W; x += 5) {
+        var u = x / W, win = Math.sin(u * Math.PI);
+        var env = 0.6 + 0.4 * Math.sin(u * 5 + time * 0.7);
+        var y = H / 2 + o[1] * 34 * amp * Math.sin(u * 9.4 + time * 1.6) * env * win;
+        d += (x ? 'L' : 'M') + x + ' ' + y.toFixed(1);
+      }
+      o[0].setAttribute('d', d);
+    });
+  }
+  draw();
+  if (!reduce) {
+    (function loop() {
+      time += 0.03;
+      amp += (ampT - amp) * 0.08;
+      draw();
+      requestAnimationFrame(loop);
+    })();
+  }
+})();
+</script>
+</body>
+</html>

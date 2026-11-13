@@ -1,0 +1,5 @@
+ALTER TABLE "CsatSnapshot"
+ADD COLUMN "completeResponseCount" INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE "CsatSnapshot"
+ADD COLUMN "voiceResponseCount" INTEGER NOT NULL DEFAULT 0;

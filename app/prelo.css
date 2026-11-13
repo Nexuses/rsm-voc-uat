@@ -1,0 +1,35 @@
+@font-face {
+  font-family: Prelo;
+  src: url("https://www.rsm.global/kuwait/profiles/rsm_global_platform/themes/rsm_global_platform_2022/fonts/Prelo-Light.woff2")
+    format("woff2");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Prelo;
+  src: url("https://www.rsm.global/kuwait/profiles/rsm_global_platform/themes/rsm_global_platform_2022/fonts/Prelo-Book.woff2")
+    format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Prelo;
+  src: url("https://www.rsm.global/kuwait/profiles/rsm_global_platform/themes/rsm_global_platform_2022/fonts/Prelo-Medium.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Prelo;
+  src: url("https://www.rsm.global/kuwait/profiles/rsm_global_platform/themes/rsm_global_platform_2022/fonts/Prelo-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

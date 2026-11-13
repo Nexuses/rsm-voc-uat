@@ -1,0 +1,109 @@
+// RSM Voice of Client — Prisma schema
+// Postgres + pgvector. Flexible data (ratings/reasons/insights) stored as JSONB so the
+// schema survives question-set changes without migrations.
+//
+// Enable pgvector once per database:  CREATE EXTENSION IF NOT EXISTS vector;
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+// One surveyed client. Optional `tier` answers the agent's "which MAJOR client" question.
+model Client {
+  id        String     @id @default(uuid())
+  name      String?
+  company   String?
+  email     String?
+  phone     String?
+  tier      String?    // e.g. "key" | "standard" — used by the chatbot to rank importance
+  locale    String     @default("en") // en | ar
+  createdAt DateTime   @default(now())
+  responses Response[]
+}
+
+// One completed survey conversation, ingested from the ElevenLabs webhook.
+model Response {
+  id             String   @id @default(uuid())
+  conversationId String   @unique // ElevenLabs conversation id → idempotent upsert
+  clientId       String?
+  client         Client?  @relation(fields: [clientId], references: [id])
+
+  // Parsed convenience fields
+  language       String?  // en | ar
+  avgRating      Float?   // computed across answers, for fast aggregation
+
+  // Flexible payloads as JSONB
+  answers        Json     // [{ question_number, question_text, rating, reason_text, reason_method }]
+  rawPayload     Json     // the full original webhook body — never discard
+
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime @default(now())
+
+  insight   ResponseInsight?
+  embedding ResponseEmbedding?
+}
+
+// Pre-computed GPT insight, one per response, generated on ingest.
+model ResponseInsight {
+  id                  String   @id @default(uuid())
+  responseId          String   @unique
+  response            Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  overallSentiment    String   // positive | neutral | negative
+  satisfactionSummary String   // why this client feels how they do
+  keyDrivers          Json     // ["slow turnaround", "praised partner availability"]
+  riskSignals         Json     // ["churn risk", "escalation"]
+  suggestedReply      Json     // { en: "...", ar: "..." }
+  nextSteps           Json     // ["partner to call within 48h", ...]
+  modelVersion        String
+  createdAt           DateTime @default(now())
+}
+
+// Embedding for the CX chatbot's retrieval (RAG).
+model ResponseEmbedding {
+  id         String                      @id @default(uuid())
+  responseId String                      @unique
+  response   Response                    @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  content    String                      // text that was embedded (reasons + insight summary)
+  embedding  Unsupported("vector(1536)") // text-embedding-3-small
+  createdAt  DateTime                    @default(now())
+}
+
+// PII-FREE aggregate for the PUBLIC widget. Recomputed on each ingest / cron.
+model CsatSnapshot {
+  id            String   @id @default(uuid())
+  period        String   // e.g. "2026-Q2" or "2026-06"
+  avgRating     Float
+  responseCount Int
+  distribution  Json     // { "1": n, "2": n, ... "5": n }
+  computedAt    DateTime @default(now())
+
+  @@unique([period])
+}
+
+// PII-FREE theme rollup for the PUBLIC widget. AI summaries only — no raw verbatims.
+model ThemeRollup {
+  id            String   @id @default(uuid())
+  period        String
+  themeLabel    String   // "Responsiveness", "Turnaround time"
+  sentiment     String   // positive | negative
+  mentionCount  Int
+  publicSummary String   // sanitised, no client-identifying detail
+  computedAt    DateTime @default(now())
+
+  @@index([period])
+}
+
+// CX team auth (NextAuth). CX dashboard + non-public APIs only.
+model User {
+  id    String @id @default(uuid())
+  email String @unique
+  role  String @default("cx") // cx | admin
+}

@@ -1,0 +1,1229 @@
+// RSM Voice of Clients — Prisma schema
+// Postgres + pgvector. Flexible data (ratings/reasons/insights) stored as JSONB so the
+// schema survives question-set changes without migrations.
+//
+// Enable pgvector once per database:  CREATE EXTENSION IF NOT EXISTS vector;
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+// One surveyed client. Optional `tier` answers the agent's "which MAJOR client" question.
+model Client {
+  id          String     @id @default(uuid())
+  name        String?
+  company     String?
+  designation String?
+  email       String?
+  phone       String?
+  tier        String? // e.g. "key" | "standard" — used by the chatbot to rank importance
+  locale      String     @default("en") // en | ar
+  createdAt   DateTime   @default(now())
+  responses   Response[]
+
+  accountId     String?
+  account       Account?     @relation(fields: [accountId], references: [id])
+  contactRoleId String?
+  contactRole   ContactRole? @relation(fields: [contactRoleId], references: [id])
+
+  @@index([accountId])
+}
+
+// One completed survey conversation, ingested from the ElevenLabs webhook.
+model Response {
+  id             String  @id @default(uuid())
+  conversationId String  @unique // ElevenLabs conversation id → idempotent upsert
+  clientId       String?
+  client         Client? @relation(fields: [clientId], references: [id])
+
+  // Parsed convenience fields
+  language      String? // en | ar
+  avgRating     Float? // legacy compatibility alias for CSAT only
+  surveyVersion String  @default("legacy-v1")
+  csatScore     Float?
+  cesScore      Float?
+  npsScore      Float?
+
+  // Flexible payloads as JSONB
+  answers    Json // [{ question_number, question_text, rating, reason_text, reason_method }]
+  rawPayload Json // the full original webhook body — never discard
+
+  startedAt        DateTime?
+  completedAt      DateTime?
+  teamNotifySentAt DateTime?
+  createdAt        DateTime  @default(now())
+
+  // Soft-exclude from KPIs / public aggregates (admin responses.manage)
+  excludedAt       DateTime?
+  excludedByUserId String?
+  exclusionReason  String?
+
+  // Public showcase moderation (PublicReviewSnippet eligibility).
+  publicApprovedAt DateTime?
+  publicHiddenAt   DateTime?
+
+  insight      ResponseInsight?
+  embedding    ResponseEmbedding?
+  surveyInvite SurveyInvite?
+  testimonial  Testimonial?
+  scoreResults ScoreResult[]
+  cases        Case[]
+  answerRows   ResponseAnswer[]
+
+  accountId    String?
+  account      Account?    @relation(fields: [accountId], references: [id])
+  engagementId String?
+  engagement   Engagement? @relation(fields: [engagementId], references: [id])
+
+  @@index([excludedAt])
+  @@index([accountId])
+  @@index([engagementId])
+}
+
+// Tracked survey invitation sent by CX (unique link per recipient).
+model SurveyInvite {
+  id                   String               @id @default(uuid())
+  batchId              String?
+  email                String
+  firstName            String?
+  lastName             String?
+  company              String?
+  designation          String?
+  department           String?
+  partner              String?
+  partnerEmail         String?
+  businessManagerName  String?
+  businessManagerEmail String?
+  jobManagerName       String?
+  jobManagerEmail      String?
+  serviceName          String?
+  teamLeader           String?
+  customerName         String?
+  projectId            String?
+  surveyOrder          String?
+  externalEngagementId String?
+  triggerStage         String? // mid | post
+  idempotencyKey       String?              @unique
+  token                String               @unique
+  resultToken          String               @unique
+  resultRevokedAt      DateTime?
+  subject              String
+  conversationId       String?              @unique
+  sentAt               DateTime?
+  followup1SentAt      DateTime?
+  followup2SentAt      DateTime?
+  followupCount        Int                  @default(0)
+  lastReminderSentAt   DateTime?
+  /// When set, cadence is measured from this timestamp instead of sentAt (Re-enable).
+  reminderCycleStartedAt DateTime?
+  remindersStoppedAt   DateTime?
+  remindersStoppedByUserId String?
+  remindersStopReason  String?
+  thankYouSentAt       DateTime?
+  openedAt             DateTime?
+  startedAt            DateTime?
+  completedAt          DateTime?
+  responseId           String?              @unique
+  response             Response?            @relation(fields: [responseId], references: [id])
+  events               SurveyInviteEvent[]
+  crmWebhookDeliveries CrmWebhookDelivery[]
+  testimonials         Testimonial[]
+  createdAt            DateTime             @default(now())
+
+  accountId    String?
+  account      Account?    @relation(fields: [accountId], references: [id])
+  engagementId String?
+  engagement   Engagement? @relation(fields: [engagementId], references: [id])
+
+  @@index([accountId])
+  @@index([engagementId])
+  @@index([batchId])
+  @@index([sentAt])
+  @@index([email])
+  @@index([followup1SentAt])
+  @@index([followup2SentAt])
+  @@index([externalEngagementId])
+  @@index([remindersStoppedAt])
+  @@index([lastReminderSentAt])
+}
+
+/// Singleton admin settings for automatic survey reminders (NEX-919).
+model SurveyReminderConfig {
+  id                 String   @id @default("default")
+  intervalDays       Int      @default(3)
+  maxCount           Int      @default(5)
+  /// Comma-separated CC list for every reminder. Empty → fall back to env.
+  ccEmails           String?
+  /// Cap auto sends per cron run (backlog stagger).
+  maxAutoSendsPerRun Int      @default(200)
+  updatedAt          DateTime @updatedAt
+  updatedByUserId    String?
+}
+
+/// Contact-level reminder stop: blocks autos for all incomplete invites with this email.
+model SurveyReminderContactStop {
+  id              String    @id @default(uuid())
+  emailNormalized String    @unique
+  stoppedAt       DateTime  @default(now())
+  stoppedByUserId String?
+  stopReason      String?
+  clearedAt       DateTime?
+  clearedByUserId String?
+
+  @@index([emailNormalized, clearedAt])
+}
+
+// Client-approved testimonial collected from a Positive thank-you.
+// Private until an admin publishes it. Not written to public aggregate tables.
+model Testimonial {
+  id                String    @id @default(uuid())
+  responseId        String    @unique
+  response          Response  @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  surveyInviteId    String?
+  surveyInvite      SurveyInvite? @relation(fields: [surveyInviteId], references: [id], onDelete: SetNull)
+  token             String    @unique
+  source            String    @default("survey_thankyou") // survey_thankyou | partner_link
+  kind              String // draft_approval | original_request
+  status            String    @default("requested") // requested | submitted | declined | published | archived
+  sourceComments    String    @default("")
+  aiDraft           String?
+  clientText        String?
+  videoUrl          String?
+  consentName       Boolean?
+  consentWebsite    Boolean?
+  consentSocial     Boolean?
+  consentedAt       DateTime?
+  requestedAt       DateTime?
+  submittedAt       DateTime?
+  publishedAt       DateTime?
+  publishedByUserId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([status, createdAt])
+  @@index([surveyInviteId])
+}
+
+// Editable survey directory. Suggestions and staff CC read this table.
+model StaffContact {
+  id        String   @id @default(uuid())
+  role      String // department | service | partner | business_manager | job_manager | team_leader
+  name      String
+  nameKey   String
+  email     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([role, nameKey])
+  @@index([role])
+}
+
+model CrmWebhookDelivery {
+  id           String        @id @default(uuid())
+  inviteId     String?
+  invite       SurveyInvite? @relation(fields: [inviteId], references: [id], onDelete: SetNull)
+  status       String
+  payload      Json
+  success      Boolean
+  httpStatus   Int?
+  error        String?
+  attemptCount Int           @default(1)
+  createdAt    DateTime      @default(now())
+
+  @@index([inviteId])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  occurredAt    DateTime @default(now())
+  actorType     String // user | system | integration
+  actorUserId   String?
+  action        String
+  resourceType  String?
+  resourceId    String?
+  metadata      Json?
+  ipDigest      String?
+  before        Json?
+  after         Json?
+  source        String? // api | ui | cron | worker | webhook | script
+  correlationId String?
+
+  @@index([occurredAt])
+  @@index([actorUserId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+  @@index([correlationId])
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String
+  slug        String           @unique
+  description String?
+  isSystem    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       User[]
+}
+
+model RolePermission {
+  id         String @id @default(uuid())
+  roleId     String
+  role       Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission String
+
+  @@unique([roleId, permission])
+  @@index([permission])
+}
+
+model SurveyInviteEvent {
+  id          String       @id @default(uuid())
+  inviteId    String
+  invite      SurveyInvite @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  type        String
+  templateId  String?
+  message     String?
+  actorUserId String?
+  createdAt   DateTime     @default(now())
+
+  @@index([inviteId, createdAt])
+}
+
+// Pre-computed GPT insight, one per response, generated on ingest.
+model ResponseInsight {
+  id         String   @id @default(uuid())
+  responseId String   @unique
+  response   Response @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  overallSentiment    String // positive | neutral | negative
+  satisfactionSummary String // why this client feels how they do
+  keyDrivers          Json // ["slow turnaround", "praised partner availability"]
+  riskSignals         Json // ["churn risk", "escalation"]
+  suggestedReply      Json // { en: "..." }
+  nextSteps           Json // ["partner to call within 48h", ...]
+  modelVersion        String
+  createdAt           DateTime @default(now())
+}
+
+// Embedding for the CX chatbot's retrieval (RAG).
+model ResponseEmbedding {
+  id         String                      @id @default(uuid())
+  responseId String                      @unique
+  response   Response                    @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  content    String // text that was embedded (reasons + insight summary)
+  embedding  Unsupported("vector(1536)") // text-embedding-3-small
+  createdAt  DateTime                    @default(now())
+}
+
+// PII-FREE aggregate for the PUBLIC widget. Recomputed on each ingest / cron.
+model CsatSnapshot {
+  id                    String   @id @default(uuid())
+  period                String // monthly, e.g. "2026-06"
+  avgRating             Float
+  responseCount         Int
+  distribution          Json // { "1": n, "2": n, ... "5": n }
+  csatFavorablePercent  Float    @default(0)
+  cesAverage            Float?
+  cesFavorablePercent   Float    @default(0)
+  cesResponseCount      Int      @default(0)
+  cesDistribution       Json     @default("{}")
+  npsScore              Float?
+  npsResponseCount      Int      @default(0)
+  npsDistribution       Json     @default("{}")
+  promoterPercent       Float    @default(0)
+  passivePercent        Float    @default(0)
+  detractorPercent      Float    @default(0)
+  totalResponseCount    Int      @default(0)
+  completeResponseCount Int      @default(0)
+  voiceResponseCount    Int      @default(0)
+  invitesSentCount      Int      @default(0)
+  inviteResponsesCount  Int      @default(0)
+  computedAt            DateTime @default(now())
+
+  @@unique([period])
+}
+
+// PII-FREE theme rollup for the PUBLIC widget. AI summaries only — no raw verbatims.
+model ThemeRollup {
+  id            String   @id @default(uuid())
+  period        String
+  themeLabel    String // "Responsiveness", "Turnaround time"
+  sentiment     String // positive | negative
+  mentionCount  Int
+  publicSummary String // sanitised, no client-identifying detail
+  computedAt    DateTime @default(now())
+
+  @@index([period])
+}
+
+// Recent review snippets for the PUBLIC showcase widget.
+// Comment text is sanitized (no emails/phones). Respondent name and company
+// are intentional attribution fields for the showcase — never email/phone.
+// Rebuilt on each aggregate recompute with the most recent commented responses.
+model PublicReviewSnippet {
+  id             String   @id @default(uuid())
+  sourceKey      String   @unique // hash of response id; not exposed by public API
+  completedAt    DateTime
+  comment        String
+  respondentName String?
+  company        String?
+  csatScore      Float?
+  cesScore       Float?
+  npsScore       Float?
+  computedAt     DateTime @default(now())
+
+  @@index([completedAt])
+}
+
+// CX team auth (NextAuth). CX dashboard + non-public APIs only.
+model User {
+  id             String     @id @default(uuid())
+  email          String     @unique
+  passwordHash   String
+  role           String     @default("cx") // denormalized Role.slug for JWT
+  roleId         String?
+  roleRef        Role?      @relation(fields: [roleId], references: [id])
+  loginOtps      LoginOtp[]
+  name           String?
+  disabledAt     DateTime?
+  // Incremented to revoke every JWT issued before the change.
+  sessionVersion Int        @default(0)
+
+  ownedCases    Case[]         @relation("CaseOwner")
+  assignedTasks Task[]         @relation("TaskAssignee")
+  scopes        UserScope[]
+  notifications Notification[]
+  employeeId    String?
+  employee      Employee?      @relation(fields: [employeeId], references: [id])
+}
+
+// Email OTP for dashboard MFA (password step → OTP step).
+model LoginOtp {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+}
+
+model SurveyRateLimit {
+  id          String   @id @default(uuid())
+  digest      String
+  action      String
+  windowStart DateTime
+  count       Int      @default(1)
+  updatedAt   DateTime @updatedAt
+
+  @@unique([digest, action, windowStart])
+  @@index([windowStart])
+}
+
+// ---------------------------------------------------------------------------
+// Platform backbone (additive). Everything below is internal-only and must
+// never be read by public UI or /api/public/* routes.
+// ---------------------------------------------------------------------------
+
+// Outbox of platform events. idempotencyKey makes every emit safe to retry.
+model DomainEvent {
+  id             String    @id @default(uuid())
+  type           String // e.g. SURVEY_RESPONSE_SUBMITTED
+  idempotencyKey String    @unique // e.g. response:{id}:submitted
+  aggregateType  String
+  aggregateId    String
+  payload        Json
+  correlationId  String?
+  occurredAt     DateTime  @default(now())
+  dispatchedAt   DateTime?
+
+  executions AutomationExecution[]
+
+  @@index([type, occurredAt])
+  @@index([dispatchedAt])
+  @@index([aggregateType, aggregateId])
+}
+
+// Postgres-backed job queue claimed with FOR UPDATE SKIP LOCKED.
+model Job {
+  id            String    @id @default(uuid())
+  type          String
+  jobKey        String    @unique
+  payload       Json
+  status        String    @default("queued") // queued | running | succeeded | dead
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(5)
+  runAt         DateTime  @default(now())
+  lockedAt      DateTime?
+  lockedBy      String?
+  lastError     String?
+  correlationId String?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status, runAt])
+  @@index([type, status])
+}
+
+// Runtime switches for new behavior. FEATURE_FLAG_<KEY> env vars override rows.
+model FeatureFlag {
+  key             String   @id
+  mode            String   @default("off") // off | shadow | live
+  description     String?
+  updatedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Versioned scoring rules (bands, weights, needs-attention thresholds).
+model ScoreDefinition {
+  id            String   @id @default(uuid())
+  key           String
+  version       Int
+  surveyVersion String // matches Response.surveyVersion
+  config        Json
+  status        String   @default("active") // draft | active | retired
+  createdAt     DateTime @default(now())
+
+  results ScoreResult[]
+
+  @@unique([key, version])
+  @@index([surveyVersion, status])
+}
+
+model ScoreResult {
+  id                String          @id @default(uuid())
+  responseId        String
+  response          Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  scoreDefinitionId String
+  scoreDefinition   ScoreDefinition @relation(fields: [scoreDefinitionId], references: [id])
+  metric            String // csat | ces | nps
+  value             Float
+  band              String // favorable | neutral | unfavorable | promoter | passive | detractor
+  needsAttention    Boolean
+  weightedScore     Float?
+  computedAt        DateTime        @default(now())
+
+  @@unique([responseId, scoreDefinitionId, metric])
+  @@index([metric, band])
+}
+
+// One row per (rule, event): replaying an event never re-runs its actions.
+model AutomationExecution {
+  id            String      @id @default(uuid())
+  ruleKey       String
+  ruleVersion   Int         @default(1)
+  domainEventId String
+  domainEvent   DomainEvent @relation(fields: [domainEventId], references: [id], onDelete: Cascade)
+  mode          String // shadow | live
+  outcome       String // not_matched | matched_shadow | case_created | case_exists | failed
+  detail        Json?
+  correlationId String?
+  createdAt     DateTime    @default(now())
+
+  case Case?
+
+  @@unique([ruleKey, ruleVersion, domainEventId])
+  @@index([ruleKey, createdAt])
+}
+
+model SlaPolicy {
+  id                 String   @id @default(uuid())
+  key                String   @unique
+  name               String
+  severity           String // low | medium | high | critical
+  firstResponseHours Int
+  resolutionHours    Int
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  cases Case[]
+}
+
+// Service-recovery case. dedupeKey keeps retries from opening duplicates.
+model Case {
+  id                         String               @id @default(uuid())
+  number                     Int                  @unique @default(autoincrement())
+  dedupeKey                  String?              @unique
+  title                      String
+  status                     String               @default("new") // see lib/cases/state.ts
+  severity                   String // low | medium | high | critical
+  priority                   String               @default("normal")
+  source                     String // automation | manual
+  responseId                 String?
+  response                   Response?            @relation(fields: [responseId], references: [id], onDelete: SetNull)
+  ownerUserId                String?
+  owner                      User?                @relation("CaseOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  slaPolicyId                String?
+  slaPolicy                  SlaPolicy?           @relation(fields: [slaPolicyId], references: [id])
+  slaDueAt                   DateTime?
+  firstRespondedAt           DateTime?
+  resolvedAt                 DateTime?
+  closedAt                   DateTime?
+  requiresClientConfirmation Boolean              @default(false)
+  triggerMetrics             Json?
+  automationExecutionId      String?              @unique
+  automationExecution        AutomationExecution? @relation(fields: [automationExecutionId], references: [id], onDelete: SetNull)
+  correlationId              String?
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  activities  CaseActivity[]
+  tasks       Task[]
+  escalations Escalation[]
+
+  clientConfirmedAt      DateTime?
+  clientConfirmedBy      String? // user id who recorded the client's confirmation
+  clientConfirmationNote String?
+
+  @@index([status, slaDueAt])
+  @@index([ownerUserId, status])
+  @@index([responseId])
+}
+
+model CaseActivity {
+  id          String   @id @default(uuid())
+  caseId      String
+  case        Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type        String // created | status_changed | assigned | note | task_added
+  actorType   String // user | system
+  actorUserId String?
+  fromStatus  String?
+  toStatus    String?
+  message     String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([caseId, createdAt])
+}
+
+model Task {
+  id             String    @id @default(uuid())
+  caseId         String?
+  case           Case?     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  title          String
+  status         String    @default("open") // open | done | cancelled
+  assigneeUserId String?
+  assignee       User?     @relation("TaskAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
+  dueAt          DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([assigneeUserId, status])
+  @@index([caseId])
+}
+
+// ---------------------------------------------------------------------------
+// Organization structure (additive). Free-text company / department / partner
+// fields on Client and SurveyInvite stay for backward compatibility.
+// ---------------------------------------------------------------------------
+
+model Organization {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  serviceLines ServiceLine[]
+  employees    Employee[]
+  accounts     Account[]
+  engagements  Engagement[]
+  contactRoles ContactRole[]
+}
+
+model ServiceLine {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  code           String // matches SURVEY_DEPARTMENTS labels
+  name           String
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  employees   Employee[]
+  engagements Engagement[]
+
+  @@unique([organizationId, code])
+}
+
+model Employee {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  normalizedName String
+  email          String?
+  level          String? // partner | director | manager | senior | staff
+  serviceLineId  String?
+  serviceLine    ServiceLine? @relation(fields: [serviceLineId], references: [id])
+  managerId      String?
+  manager        Employee?    @relation("EmployeeManager", fields: [managerId], references: [id])
+  reports        Employee[]   @relation("EmployeeManager")
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  ownedAccounts       Account[]            @relation("AccountOwner")
+  partnerEngagements  Engagement[]         @relation("EngagementPartner")
+  managerEngagements  Engagement[]         @relation("EngagementManager")
+  users               User[]
+  trainingAssignments TrainingAssignment[]
+
+  @@unique([organizationId, normalizedName])
+  @@index([serviceLineId])
+}
+
+model Account {
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  name            String
+  normalizedName  String
+  industry        String?
+  tier            String?
+  ownerEmployeeId String?
+  ownerEmployee   Employee?    @relation("AccountOwner", fields: [ownerEmployeeId], references: [id])
+  externalCrmId   String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  contacts         Client[]
+  engagements      Engagement[]
+  responses        Response[]
+  invites          SurveyInvite[]
+  healthSnapshots  HealthSnapshot[]
+  revenueSnapshots RevenueSnapshot[]
+
+  @@unique([organizationId, normalizedName])
+  @@index([externalCrmId])
+}
+
+model ContactRole {
+  id                String       @id @default(uuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  name              String
+  stakeholderWeight Float        @default(1)
+  createdAt         DateTime     @default(now())
+
+  contacts Client[]
+
+  @@unique([organizationId, name])
+}
+
+model Engagement {
+  id                   String       @id @default(uuid())
+  organizationId       String
+  organization         Organization @relation(fields: [organizationId], references: [id])
+  accountId            String?
+  account              Account?     @relation(fields: [accountId], references: [id])
+  serviceLineId        String?
+  serviceLine          ServiceLine? @relation(fields: [serviceLineId], references: [id])
+  partnerEmployeeId    String?
+  partnerEmployee      Employee?    @relation("EngagementPartner", fields: [partnerEmployeeId], references: [id])
+  managerEmployeeId    String?
+  managerEmployee      Employee?    @relation("EngagementManager", fields: [managerEmployeeId], references: [id])
+  externalEngagementId String?      @unique
+  name                 String?
+  status               String       @default("active") // planned | active | completed | cancelled
+  startDate            DateTime?
+  endDate              DateTime?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  milestones EngagementMilestone[]
+  responses  Response[]
+  invites    SurveyInvite[]
+
+  @@index([accountId])
+  @@index([serviceLineId])
+}
+
+model EngagementMilestone {
+  id           String     @id @default(uuid())
+  engagementId String
+  engagement   Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  name         String
+  dueAt        DateTime?
+  reachedAt    DateTime?
+  createdAt    DateTime   @default(now())
+
+  @@index([engagementId])
+}
+
+// ---------------------------------------------------------------------------
+// Cases: escalations
+// ---------------------------------------------------------------------------
+
+model Escalation {
+  id                String    @id @default(uuid())
+  caseId            String
+  case              Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  level             Int       @default(1)
+  reason            String // sla_breached | manual
+  escalatedToUserId String?
+  acknowledgedAt    DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@unique([caseId, level, reason])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Survey definitions and versioning. Response.surveyVersion (string) remains
+// the stored key; SurveyVersion.versionKey matches it.
+// ---------------------------------------------------------------------------
+
+model Survey {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  versions SurveyVersion[]
+}
+
+model SurveyVersion {
+  id                String    @id @default(uuid())
+  surveyId          String
+  survey            Survey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  versionKey        String    @unique // e.g. three-metric-v2
+  status            String    @default("draft") // draft | published | archived
+  definition        Json // sections, questions, scales, locales (Zod: lib/surveys/definition.ts)
+  publishedAt       DateTime?
+  publishedByUserId String?
+  archivedAt        DateTime?
+  createdByUserId   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  questions SurveyQuestion[]
+
+  @@index([surveyId, status])
+}
+
+model SurveyQuestion {
+  id              String        @id @default(uuid())
+  surveyVersionId String
+  surveyVersion   SurveyVersion @relation(fields: [surveyVersionId], references: [id], onDelete: Cascade)
+  questionKey     String // stable across versions, e.g. csat
+  position        Int
+  metric          String? // csat | ces | nps
+  kind            String // rating | text | choice
+  scaleMin        Int?
+  scaleMax        Int?
+  text            Json // { en, ar }
+  weight          Float?
+
+  options SurveyOption[]
+  answers ResponseAnswer[]
+
+  @@unique([surveyVersionId, questionKey])
+}
+
+model SurveyOption {
+  id         String         @id @default(uuid())
+  questionId String
+  question   SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionKey  String
+  position   Int
+  label      Json // { en, ar }
+
+  @@unique([questionId, optionKey])
+}
+
+// Normalized answers, dual-written from Response.answers (JSON stays canonical).
+model ResponseAnswer {
+  id           String          @id @default(uuid())
+  responseId   String
+  response     Response        @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId   String?
+  question     SurveyQuestion? @relation(fields: [questionId], references: [id], onDelete: SetNull)
+  questionKey  String
+  metric       String?
+  numericValue Float?
+  textValue    String?
+  choiceKeys   String[]
+  createdAt    DateTime        @default(now())
+
+  @@unique([responseId, questionKey])
+  @@index([questionKey, numericValue])
+}
+
+// ---------------------------------------------------------------------------
+// Automation: rules, approvals, fatigue, templates, delivery ledger
+// ---------------------------------------------------------------------------
+
+model AutomationRule {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  versions AutomationRuleVersion[]
+}
+
+model AutomationRuleVersion {
+  id              String         @id @default(uuid())
+  ruleId          String
+  rule            AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  version         Int
+  eventType       String
+  conditions      Json // Zod: lib/automation/conditions.ts
+  actions         Json // Zod: lib/automation/actions.ts
+  delayMinutes    Int            @default(0)
+  mode            String         @default("shadow") // shadow | live
+  status          String         @default("draft") // draft | active | retired
+  createdByUserId String?
+  createdAt       DateTime       @default(now())
+
+  @@unique([ruleId, version])
+  @@index([eventType, status])
+}
+
+model CommunicationPolicy {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  channel         String   @default("email")
+  maxPerContact   Int // messages per contact within windowDays
+  maxPerAccount   Int?
+  windowDays      Int
+  minIntervalDays Int      @default(0)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ApprovalRequest {
+  id                String    @id @default(uuid())
+  kind              String // message_send | survey_publish | rule_activate
+  status            String    @default("pending") // pending | approved | rejected | expired
+  resourceType      String?
+  resourceId        String?
+  payload           Json
+  requestedByType   String // user | system
+  requestedByUserId String?
+  decidedByUserId   String?
+  decidedAt         DateTime?
+  decisionNote      String?
+  correlationId     String?
+  createdAt         DateTime  @default(now())
+
+  @@index([status, createdAt])
+}
+
+model MessageTemplate {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  name      String
+  channel   String   @default("email")
+  createdAt DateTime @default(now())
+
+  versions MessageTemplateVersion[]
+}
+
+model MessageTemplateVersion {
+  id               String          @id @default(uuid())
+  templateId       String
+  template         MessageTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  version          Int
+  locale           String // en | ar
+  subject          String?
+  body             String
+  status           String          @default("draft") // draft | approved | retired
+  approvedByUserId String?
+  createdAt        DateTime        @default(now())
+
+  @@unique([templateId, version, locale])
+}
+
+// Single outbound send ledger. dedupeKey stops the same message going twice.
+model MessageDelivery {
+  id                String    @id @default(uuid())
+  dedupeKey         String    @unique
+  channel           String // email | whatsapp | sms
+  templateKey       String?
+  recipient         String
+  accountId         String?
+  subjectEntityType String?
+  subjectEntityId   String?
+  status            String    @default("queued") // queued | held | sent | failed | suppressed
+  provider          String?
+  providerMessageId String?
+  approvalRequestId String?
+  error             String?
+  sentAt            DateTime?
+  correlationId     String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([recipient, createdAt])
+  @@index([accountId, createdAt])
+  @@index([status])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+// ---------------------------------------------------------------------------
+// Account health and revenue (revenue gated by revenue.read)
+// ---------------------------------------------------------------------------
+
+model HealthModel {
+  id        String   @id @default(uuid())
+  key       String
+  version   Int
+  config    Json // Zod: lib/health/model.ts
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  snapshots HealthSnapshot[]
+
+  @@unique([key, version])
+}
+
+model HealthSnapshot {
+  id            String      @id @default(uuid())
+  accountId     String
+  account       Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  healthModelId String
+  healthModel   HealthModel @relation(fields: [healthModelId], references: [id])
+  score         Float?
+  state         String // healthy | watch | at_risk | unknown
+  components    Json
+  computedAt    DateTime    @default(now())
+
+  @@index([accountId, computedAt])
+}
+
+model RevenueSnapshot {
+  id        String   @id @default(uuid())
+  accountId String
+  account   Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  period    String // e.g. 2026-Q3
+  amount    Decimal  @db.Decimal(14, 2)
+  currency  String   @default("KWD")
+  source    String // crm | manual
+  createdAt DateTime @default(now())
+
+  @@unique([accountId, period, source])
+}
+
+// Data scope per user. A user with no rows keeps unrestricted access.
+model UserScope {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scopeType String // all | serviceLine | account | engagement
+  scopeId   String? // null only for scopeType "all"
+  createdAt DateTime @default(now())
+
+  @@unique([userId, scopeType, scopeId])
+  @@index([userId])
+}
+
+// ── AI, integrations, training, benchmarks ──────────────────────────────────
+
+// One row per model call. Prompt and completion bodies are never stored.
+model AiInteraction {
+  id            String   @id @default(uuid())
+  purpose       String // ask_your_data | chat_legacy | summary | insight
+  provider      String
+  model         String
+  promptVersion String
+  actorType     String // user | system
+  actorUserId   String?
+  inputTokens   Int?
+  outputTokens  Int?
+  latencyMs     Int
+  status        String // ok | error
+  error         String?
+  sourceIds     String[]
+  toolCalls     String[]
+  correlationId String?
+  createdAt     DateTime @default(now())
+
+  @@index([purpose, createdAt])
+  @@index([actorUserId, createdAt])
+}
+
+model AiArtifact {
+  id              String    @id @default(uuid())
+  kind            String // summary | draft | brief
+  scopeType       String // account | engagement | organization
+  scopeId         String?
+  promptVersion   String
+  model           String
+  content         Json
+  sourceIds       String[]
+  status          String    @default("draft") // draft | approved | rejected
+  createdByType   String // user | system
+  createdByUserId String?
+  decidedByUserId String?
+  decidedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([scopeType, scopeId, createdAt])
+}
+
+/// Append-only CX report narratives for PDF write-ups and few-shot learning.
+model AiReportNarrative {
+  id          String   @id @default(uuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  filtersJson Json
+  statsJson   Json
+  narrativeJson Json
+  model       String
+  promptVersion String
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@index([periodStart, periodEnd, createdAt])
+  @@index([createdAt])
+}
+
+model Integration {
+  id        String   @id @default(uuid())
+  kind      String // email | crm | voice | messaging | lms | ai | inbound
+  vendor    String
+  name      String
+  status    String   @default("active") // active | disabled
+  config    Json     @default("{}") // non-secret settings only
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  credentials IntegrationCredential[]
+
+  @@unique([kind, vendor])
+}
+
+model IntegrationCredential {
+  id              String      @id @default(uuid())
+  integrationId   String
+  integration     Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  kind            String // inbound_api_key | provider_secret
+  label           String
+  keyPrefix       String? // first characters, for display only
+  keyHash         String?     @unique // sha256 of inbound keys
+  encryptedSecret String? // AES-256-GCM, see lib/integrations/secret-box.ts
+  scopes          String[]
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  revokedAt       DateTime?
+  createdByUserId String?
+  createdAt       DateTime    @default(now())
+
+  @@index([integrationId])
+}
+
+model WebhookEvent {
+  id             String    @id @default(uuid())
+  source         String // sendgrid | crm | elevenlabs
+  eventType      String?
+  dedupeKey      String?   @unique
+  signatureValid Boolean
+  payload        Json
+  receivedAt     DateTime  @default(now())
+  processedAt    DateTime?
+  error          String?
+
+  @@index([source, receivedAt])
+}
+
+model TrainingCourse {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  title       String
+  description String?
+  externalUrl String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  assignments TrainingAssignment[]
+}
+
+model TrainingRule {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  name      String
+  config    Json // Zod: lib/training/rules.ts
+  mode      String   @default("shadow") // shadow | live
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments TrainingAssignment[]
+}
+
+model TrainingAssignment {
+  id                String         @id @default(uuid())
+  dedupeKey         String         @unique
+  employeeId        String
+  employee          Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  courseId          String
+  course            TrainingCourse @relation(fields: [courseId], references: [id])
+  ruleId            String?
+  rule              TrainingRule?  @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  reason            String
+  status            String         @default("assigned") // proposed (shadow) | assigned | in_progress | completed | cancelled
+  dueAt             DateTime?
+  completedAt       DateTime?
+  externalId        String?
+  sourceResponseIds String[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([employeeId, status])
+}
+
+// Internal and external benchmarks are stored together but always shown apart.
+model Benchmark {
+  id           String   @id @default(uuid())
+  scope        String // internal | external
+  dimension    String // overall | service_line | industry
+  dimensionKey String   @default("")
+  metric       String // csat | ces | nps
+  value        Float
+  sampleSize   Int?
+  population   String?
+  source       String
+  periodStart  DateTime
+  periodEnd    DateTime
+  createdAt    DateTime @default(now())
+
+  @@unique([scope, dimension, dimensionKey, metric, periodStart, periodEnd, source])
+  @@index([metric, periodEnd])
+}

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NPS Dashboard – RSM Albazie & Co.</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  :root {
+    --navy: #0D1B3E;
+    --green: #009A44;
+    --green2: #57A000;
+    --blue: #00AEEF;
+    --grey-mid: #9E9E9E;
+    --grey-light: #bdbdbd;
+    --amber: #F59E0B;
+    --surface: #ffffff;
+    --bg: #f0f2f5;
+    --border: #e2e6ea;
+    --text-primary: #0D1B3E;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
+  }
+
+  .page-header { background: var(--navy); padding: 0 32px; position: relative; overflow: hidden; }
+  .page-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:var(--green); }
+  .header-inner { display:flex; align-items:flex-start; justify-content:space-between; padding:18px 0 20px; }
+  .header-brand { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .brand-avatar { width:36px; height:36px; background:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:#fff; flex-shrink:0; }
+  .brand-info .firm { font-size:13px; font-weight:600; color:#fff; }
+  .brand-info .sub  { font-size:10px; color:rgba(255,255,255,0.5); letter-spacing:0.06em; text-transform:uppercase; }
+  .header-left { flex:1; }
+  .header-title { font-size:26px; font-weight:700; color:#fff; margin-bottom:5px; }
+  .header-desc  { font-size:13px; color:rgba(255,255,255,0.65); max-width:520px; line-height:1.5; }
+  .header-desc strong { color:#fff; font-weight:600; }
+  .export-btn { background:var(--green); color:#fff; border:none; padding:9px 18px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px; white-space:nowrap; margin-top:28px; }
+
+  .filter-bar { background:#fff; border-bottom:1px solid var(--border); padding:0 32px; display:flex; align-items:center; justify-content:space-between; }
+  .filters-left { display:flex; align-items:center; gap:24px; padding:11px 0; }
+  .filter-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-secondary); }
+  .filter-item .val { font-weight:600; color:var(--text-primary); }
+  .filter-item .val.green { color:var(--green); }
+  .filter-item .val.blue  { color:var(--blue); }
+  .filter-sep { color:var(--border); font-size:16px; }
+  .last-updated { font-size:12px; color:var(--text-secondary); padding:11px 0; }
+  .last-updated strong { color:var(--text-primary); }
+
+  .content { padding:24px 32px; }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+  .kpi-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px 14px; position:relative; }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:10px 10px 0 0; }
+  .kpi-card.kpi-green::before  { background:var(--green); }
+  .kpi-card.kpi-blue::before   { background:var(--blue); }
+  .kpi-card.kpi-navy::before   { background:var(--navy); }
+  .kpi-card.kpi-amber::before  { background:var(--amber); }
+  .kpi-card-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; }
+  .kpi-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-secondary); }
+  .kpi-val { font-size:38px; font-weight:800; color:var(--text-primary); line-height:1; margin-bottom:6px; letter-spacing:-0.02em; }
+  .kpi-val sup { font-size:20px; font-weight:700; vertical-align:super; }
+  .kpi-desc { font-size:11.5px; color:var(--text-secondary); line-height:1.5; }
+
+  .section-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px 22px; }
+  .card-title { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:3px; }
+  .card-sub   { font-size:12px; color:var(--text-secondary); margin-bottom:16px; }
+
+  /* NPS donut */
+  .nps-badge { background:#e8f5ef; color:var(--green); font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.04em; text-transform:uppercase; }
+  .nps-header-row { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px; }
+  .donut-wrap { display:flex; justify-content:center; align-items:center; padding:10px 0 14px; }
+  .donut-container { position:relative; width:150px; height:150px; }
+  .donut-container svg { position:absolute; top:0; left:0; }
+  .donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+  .donut-pct { font-size:32px; font-weight:800; color:var(--green); line-height:1; }
+  .donut-lbl { font-size:11px; font-weight:600; color:var(--text-secondary); margin-top:2px; }
+  .nps-foot { display:flex; gap:24px; border-top:1px solid var(--border); padding-top:14px; margin-top:4px; }
+  .nps-foot-item .num { font-size:18px; font-weight:700; color:var(--text-primary); }
+  .nps-foot-item .lbl { font-size:11px; color:var(--text-secondary); }
+
+  /* NPS distribution */
+  .nps-dist-row { display:flex; align-items:center; gap:24px; }
+  .dist-donut-wrap { position:relative; width:110px; height:110px; flex-shrink:0; }
+  .dist-donut-wrap svg { position:absolute; top:0; left:0; }
+  .dist-donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+  .dist-num { font-size:18px; font-weight:800; color:var(--text-primary); line-height:1; }
+  .dist-sub { font-size:9px; font-weight:600; color:var(--text-secondary); letter-spacing:0.06em; text-transform:uppercase; }
+  .dist-list { flex:1; display:flex; flex-direction:column; gap:10px; }
+  .dist-row { display:flex; align-items:center; justify-content:space-between; }
+  .dist-row-left { display:flex; align-items:center; gap:7px; }
+  .dist-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .dist-name { font-size:12px; font-weight:600; color:var(--text-primary); }
+  .dist-tag  { font-size:10px; color:var(--text-secondary); }
+  .dist-right { text-align:right; }
+  .dist-count { font-size:13px; font-weight:700; color:var(--text-primary); }
+  .dist-pct   { font-size:10px; color:var(--text-secondary); }
+
+  /* Breakdown bars */
+  .legend { display:flex; gap:14px; margin-bottom:16px; flex-wrap:wrap; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--text-secondary); }
+  .legend-dot { width:8px; height:8px; border-radius:50%; }
+  .bar-rows { display:flex; flex-direction:column; gap:10px; }
+  .bar-row-item { display:flex; align-items:center; gap:10px; }
+  .bar-label { font-size:12px; color:var(--text-secondary); min-width:80px; text-align:right; }
+  .bar-track { flex:1; height:18px; background:#f0f2f5; border-radius:4px; overflow:hidden; }
+  .bar-fill  { height:100%; border-radius:4px; }
+  .bar-count { font-size:12px; font-weight:600; color:var(--text-primary); min-width:28px; }
+
+  /* Methodology */
+  .method-link { font-size:11px; color:var(--blue); font-weight:600; margin-bottom:14px; display:inline-block; text-decoration:none; }
+  .method-icons { display:flex; gap:0; margin-bottom:8px; }
+  .mi { flex:1; text-align:center; }
+  .mi svg { display:block; margin:0 auto 5px; }
+  .mi-label { font-size:10px; font-weight:700; line-height:1.3; }
+  .mi-label.c1 { color:#009A44; } .mi-label.c2 { color:#00AEEF; } .mi-label.c3 { color:#9E9E9E; }
+  .method-bar { display:flex; border-radius:3px; overflow:hidden; margin-bottom:16px; }
+  .mb-seg { flex:1; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; }
+  .mb-s5 { background:#009A44; } .mb-s4 { background:#00AEEF; }
+  .mb-s3 { background:#9E9E9E; } .mb-s2 { background:#bdbdbd; } .mb-s1 { background:#d5d5d5; }
+
+  /* Global NPS scale */
+  .global-scale-section { background:#f7f8fc; border:0.5px solid #dde; border-radius:6px; padding:14px 16px; margin-bottom:14px; }
+  .scale-title { text-align:center; color:#009A44; font-size:12px; font-weight:700; margin-bottom:12px; }
+  .global-icons { display:flex; margin-bottom:4px; }
+  .gi { text-align:center; }
+  .gi-lbl { font-size:9px; font-weight:700; line-height:1.3; }
+  .gi-lbl.c1{color:#009A44;} .gi-lbl.c2{color:#00AEEF;} .gi-lbl.c3{color:#9E9E9E;}
+  .global-bar { display:flex; border-radius:3px; overflow:hidden; }
+  .gb-seg { height:20px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#fff; }
+
+  /* Calc */
+  .calc-section { display:flex; flex-direction:column; gap:8px; }
+  .calc-formula-row { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-secondary); padding:6px 0; border-top:1px solid var(--border); }
+  .calc-formula-row .sym { font-size:14px; color:var(--text-muted); }
+  .calc-formula-row .highlight { color:#009A44; font-weight:800; font-size:13px; }
+  .calc-formula-row strong { color:var(--text-primary); font-weight:700; }
+  .calc-result { background:#009A44; color:#fff; border-radius:6px; padding:7px 14px; text-align:center; font-size:16px; font-weight:800; white-space:nowrap; }
+  .calc-result-sub { font-size:9px; font-weight:600; }
+  .calc-pill { background:#e8f5ef; border:1px solid #009A44; border-radius:4px; padding:5px 12px; font-size:11px; font-weight:700; color:#009A44; display:inline-block; }
+  .fml-box { border:1.5px solid #00AEEF; border-radius:4px; padding:9px 14px; display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .fml-lhs { font-size:10px; font-weight:700; color:#00AEEF; text-align:center; min-width:70px; line-height:1.35; }
+  .fml-op { font-size:16px; color:#555; font-weight:300; }
+  .fml-mid { font-size:10px; color:#555; text-align:center; min-width:58px; line-height:1.35; }
+  .fml-eq { font-size:13px; font-weight:700; color:#00AEEF; }
+  .fml-res { font-size:12px; font-weight:700; color:#009A44; }
+  .num-box { border:1.5px solid #00AEEF; border-radius:4px; padding:9px 14px; display:flex; align-items:center; gap:10px; }
+  .num-lhs { font-size:12px; font-weight:700; color:#00AEEF; min-width:70px; line-height:1.3; }
+  .num-op  { font-size:16px; color:#555; font-weight:300; }
+  .num-mid { font-size:12px; color:#555; min-width:58px; text-align:center; }
+  .num-eq  { font-size:14px; color:#555; }
+  .num-fin { font-size:14px; font-weight:700; color:#333; }
+  .calc-row-wrap { display:flex; align-items:center; gap:20px; }
+  .eq-col  { font-size:26px; color:#555; font-weight:300; }
+
+  /* Insights */
+  .insights-section { margin-bottom:20px; }
+  .insights-title { font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:2px; }
+  .insights-sub   { font-size:12px; color:var(--text-secondary); margin-bottom:14px; }
+  .insights-grid  { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .insight-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:18px 20px; }
+  .insight-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+  .insight-tag { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:3px 9px; border-radius:20px; }
+  .tag-strength  { background:#e8f5ef; color:#009A44; }
+  .tag-highlight { background:#e0f3fc; color:#0077aa; }
+  .tag-watch     { background:#fef3e2; color:#d97706; }
+  .insight-big  { font-size:30px; font-weight:800; color:var(--text-primary); line-height:1; margin-bottom:5px; }
+  .insight-bold { font-size:13px; font-weight:700; color:var(--text-primary); margin-bottom:6px; }
+  .insight-desc { font-size:12px; color:var(--text-secondary); line-height:1.55; }
+  .insight-desc strong { color:var(--green); }
+
+  .page-footer { background:#fff; border-top:1px solid var(--border); padding:12px 32px; display:flex; justify-content:space-between; font-size:11px; color:var(--text-muted); }
+  .page-footer strong { color:var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-brand">
+        <div class="brand-avatar">R</div>
+        <div class="brand-info">
+          <div class="firm">RSM Albazie &amp; Co.</div>
+          <div class="sub">Voice of Clients &nbsp;·&nbsp; CX</div>
+        </div>
+      </div>
+      <div class="header-title">NPS Dashboard</div>
+      <div class="header-desc">
+        Voice of Clients loyalty report — measured against <strong>"Would you recommend RSM in Kuwait to others?"</strong>. Period: 1 July 2024 – 30 June 2025.
+      </div>
+    </div>
+    <button class="export-btn">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 10v1.5A1.5 1.5 0 003.5 13h7A1.5 1.5 0 0012 11.5V10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Export Report
+    </button>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <div class="filters-left">
+    <div class="filter-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M1 5h11M4 1v2M9 1v2" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Period: <span class="val">1 July 2024 – 30 June 2025</span>
+    </div>
+    <span class="filter-sep">|</span>
+    <div class="filter-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#9ca3af" stroke-width="1.2"/><path d="M6.5 3.5v3.5l2 1.5" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Scope: <span class="val green">Would you recommend RSM?</span>
+    </div>
+    <span class="filter-sep">|</span>
+    <div class="filter-item">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 3.5h10M3 6.5h7M5 9.5h3" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Segment: <span class="val blue">All clients</span>
+    </div>
+  </div>
+  <div class="last-updated">Last updated: <strong>30 June 2025</strong></div>
+</div>
+
+<main class="content">
+
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-green">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Overall NPS</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#009A44" stroke-width="1.4"/><circle cx="6" cy="7.5" r="1.2" fill="#009A44"/><circle cx="12" cy="7.5" r="1.2" fill="#009A44"/><path d="M5.5 11 Q9 14 12.5 11" stroke="#009A44" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">62<sup>%</sup></div>
+      <div class="kpi-desc">Net Promoter Score — promoters minus detractors.</div>
+    </div>
+    <div class="kpi-card kpi-green" style="border-top-color:var(--green)">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Promoters</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#009A44" stroke-width="1.4"/><circle cx="6.5" cy="7.5" r="1.1" fill="#009A44"/><circle cx="11.5" cy="7.5" r="1.1" fill="#009A44"/><path d="M5.5 11 Q9 14 12.5 11" stroke="#009A44" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">137</div>
+      <div class="kpi-desc">Rated 5 — strong advocates for RSM in Kuwait.</div>
+    </div>
+    <div class="kpi-card kpi-blue">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Neutral</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#00AEEF" stroke-width="1.4"/><circle cx="6.5" cy="7.5" r="1.1" fill="#00AEEF"/><circle cx="11.5" cy="7.5" r="1.1" fill="#00AEEF"/><line x1="6" y1="12" x2="12" y2="12" stroke="#00AEEF" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </div>
+      <div class="kpi-val">58</div>
+      <div class="kpi-desc">Rated 4 — passive clients, not counted in NPS.</div>
+    </div>
+    <div class="kpi-card kpi-amber">
+      <div class="kpi-card-header">
+        <div class="kpi-label">Detractors</div>
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#9E9E9E" stroke-width="1.4"/><circle cx="6.5" cy="7.5" r="1.1" fill="#9E9E9E"/><circle cx="11.5" cy="7.5" r="1.1" fill="#9E9E9E"/><path d="M6 13 Q9 10.5 12 13" stroke="#9E9E9E" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>
+      </div>
+      <div class="kpi-val">10</div>
+      <div class="kpi-desc">Rated 1–3 — opportunity for service recovery.</div>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="nps-header-row">
+        <div>
+          <div class="card-title">Overall NPS</div>
+          <div class="card-sub">% Promoters − % Detractors</div>
+        </div>
+        <span class="nps-badge">Annual result</span>
+      </div>
+      <div class="donut-wrap">
+        <div class="donut-container">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#e8e8e8" stroke-width="11"/>
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#009A44" stroke-width="11"
+              stroke-dasharray="233.6 376.99"
+              stroke-dashoffset="94.25"
+              stroke-linecap="round"
+              transform="rotate(-90 75 75)"/>
+            <circle cx="75" cy="75" r="60" fill="none" stroke="#e0e0e0" stroke-width="11"
+              stroke-dasharray="143.4 376.99"
+              stroke-dashoffset="-139.35"
+              transform="rotate(-90 75 75)"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">62%</div>
+            <div class="donut-lbl">NPS</div>
+          </div>
+        </div>
+      </div>
+      <div class="nps-foot">
+        <div class="nps-foot-item"><div class="num">137</div><div class="lbl">Promoters (Rating 5)</div></div>
+        <div class="nps-foot-item"><div class="num">58</div><div class="lbl">Neutral (Rating 4)</div></div>
+        <div class="nps-foot-item"><div class="num">10</div><div class="lbl">Detractors (Rating 1–3)</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Response distribution</div>
+      <div class="card-sub">205 responses across the NPS scale</div>
+      <div class="nps-dist-row">
+        <div class="dist-donut-wrap">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#e8e8e8" stroke-width="9"/>
+            <!-- Promoters 137/205=66.8% = 176.3 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#009A44" stroke-width="9"
+              stroke-dasharray="176.3 263.9"
+              stroke-dashoffset="66"
+              transform="rotate(-90 55 55)"/>
+            <!-- Neutral 58/205=28.3% = 74.7 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#00AEEF" stroke-width="9"
+              stroke-dasharray="74.7 263.9"
+              stroke-dashoffset="-110.3"
+              transform="rotate(-90 55 55)"/>
+            <!-- Detractors 10/205=4.9% = 12.9 -->
+            <circle cx="55" cy="55" r="42" fill="none" stroke="#9E9E9E" stroke-width="9"
+              stroke-dasharray="12.9 263.9"
+              stroke-dashoffset="-185"
+              transform="rotate(-90 55 55)"/>
+          </svg>
+          <div class="dist-donut-center">
+            <div class="dist-num">205</div>
+            <div class="dist-sub">Responses</div>
+          </div>
+        </div>
+        <div class="dist-list">
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#009A44"></div><div><div class="dist-name">Promoters</div><div class="dist-tag">Rating 5</div></div></div>
+            <div class="dist-right"><div class="dist-count">137</div><div class="dist-pct">66.8%</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#00AEEF"></div><div><div class="dist-name">Neutral</div><div class="dist-tag">Rating 4</div></div></div>
+            <div class="dist-right"><div class="dist-count">58</div><div class="dist-pct">28.3%</div></div>
+          </div>
+          <div class="dist-row">
+            <div class="dist-row-left"><div class="dist-dot" style="background:#9E9E9E"></div><div><div class="dist-name">Detractors</div><div class="dist-tag">Rating 1–3</div></div></div>
+            <div class="dist-right"><div class="dist-count">10</div><div class="dist-pct">4.9%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-row">
+    <div class="card">
+      <div class="card-title">Rating breakdown</div>
+      <div class="card-sub">Count of responses by NPS category</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#009A44"></div> Promoters (5)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00AEEF"></div> Neutral (4)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9E9E9E"></div> Detractors (1–3)</div>
+      </div>
+      <div class="bar-rows">
+        <div class="bar-row-item">
+          <div class="bar-label">Promoters</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%;background:#009A44"></div></div>
+          <div class="bar-count">137</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Neutral</div>
+          <div class="bar-track"><div class="bar-fill" style="width:42.3%;background:#00AEEF"></div></div>
+          <div class="bar-count">58</div>
+        </div>
+        <div class="bar-row-item">
+          <div class="bar-label">Detractors</div>
+          <div class="bar-track"><div class="bar-fill" style="width:7.3%;background:#9E9E9E;min-width:18px"></div></div>
+          <div class="bar-count">10</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Methodology &amp; calculation</div>
+      <div class="card-sub">NPS = % Promoters (rating 5) minus % Detractors (ratings 1–3).</div>
+      <a class="method-link" href="#">Global NPS Scale</a>
+
+      <div style="background:#f7f8fc;border:0.5px solid #dde;border-radius:6px;padding:12px 16px;margin-bottom:12px">
+        <div style="text-align:center;color:#009A44;font-size:12px;font-weight:700;margin-bottom:10px">Global NPS Scale (0–10)</div>
+        <div style="display:flex;align-items:flex-end;margin-bottom:8px">
+          <div style="flex:2;text-align:center">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#009A44" stroke-width="1.6" fill="rgba(0,154,68,0.07)"/><circle cx="13.5" cy="16" r="2.1" fill="#009A44"/><circle cx="26.5" cy="16" r="2.1" fill="#009A44"/><path d="M11 24.5 Q20 31 29 24.5" stroke="#009A44" stroke-width="2" stroke-linecap="round" fill="none"/><path d="M8 17 Q10.5 15.5 10 19" stroke="#009A44" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M32 17 Q29.5 15.5 30 19" stroke="#009A44" stroke-width="1.3" stroke-linecap="round" fill="none"/></svg>
+            <div style="font-size:10px;font-weight:700;color:#009A44;line-height:1.4;margin-top:4px">Promoters<br>(9–10)</div>
+          </div>
+          <div style="flex:2;text-align:center">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#00AEEF" stroke-width="1.6" fill="rgba(0,174,239,0.07)"/><circle cx="13.5" cy="16" r="2.1" fill="#00AEEF"/><circle cx="26.5" cy="16" r="2.1" fill="#00AEEF"/><line x1="12" y1="26" x2="28" y2="26" stroke="#00AEEF" stroke-width="2" stroke-linecap="round"/></svg>
+            <div style="font-size:10px;font-weight:700;color:#00AEEF;line-height:1.4;margin-top:4px">Neutral<br>(7–8)</div>
+          </div>
+          <div style="flex:7;text-align:center">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#9E9E9E" stroke-width="1.6" fill="rgba(0,0,0,0.03)"/><circle cx="13.5" cy="16" r="2.1" fill="#9E9E9E"/><circle cx="26.5" cy="16" r="2.1" fill="#9E9E9E"/><path d="M12 28 Q20 22.5 28 28" stroke="#9E9E9E" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+            <div style="font-size:10px;font-weight:700;color:#9E9E9E;line-height:1.4;margin-top:4px">Detractors (0–6)</div>
+          </div>
+        </div>
+        <div style="display:flex;border-radius:3px;overflow:hidden">
+          <div style="flex:1;height:18px;background:#009A44;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">10</div>
+          <div style="flex:1;height:18px;background:#009A44;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">9</div>
+          <div style="flex:1;height:18px;background:#00AEEF;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">8</div>
+          <div style="flex:1;height:18px;background:#00AEEF;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">7</div>
+          <div style="flex:1;height:18px;background:#9E9E9E;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">6</div>
+          <div style="flex:1;height:18px;background:#9E9E9E;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">5</div>
+          <div style="flex:1;height:18px;background:#9E9E9E;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">4</div>
+          <div style="flex:1;height:18px;background:#9E9E9E;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">3</div>
+          <div style="flex:1;height:18px;background:#bdbdbd;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">2</div>
+          <div style="flex:1;height:18px;background:#bdbdbd;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">1</div>
+          <div style="flex:1;height:18px;background:#d5d5d5;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">0</div>
+        </div>
+      </div>
+
+      <div class="calc-row-wrap">
+        <div style="flex:1">
+          <div class="fml-box">
+            <div class="fml-lhs">%<br>Promoters</div>
+            <div class="fml-op">−</div>
+            <div class="fml-mid">%<br>Detractors</div>
+            <div class="fml-eq">=</div>
+            <div class="fml-res">Overall NPS</div>
+          </div>
+          <div class="num-box">
+            <div class="num-lhs" style="font-size:11px">66.8%<br><span style="font-size:9px;color:#888">(137÷205)×100</span></div>
+            <div class="num-op">−</div>
+            <div class="num-mid" style="font-size:11px">4.8%<br><span style="font-size:9px;color:#888">(10÷205)×100</span></div>
+            <div class="num-eq">=</div>
+            <div class="num-fin" style="color:#009A44;font-size:16px">62%</div>
+          </div>
+        </div>
+        <div class="eq-col">=</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:110px">
+          <div style="position:relative;width:100px;height:100px">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e8e8e8" stroke-width="8"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#009A44" stroke-width="8"
+                stroke-dasharray="155.5 251.3"
+                stroke-dashoffset="62.8"
+                stroke-linecap="round"
+                transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e0e0e0" stroke-width="8"
+                stroke-dasharray="95.8 251.3"
+                stroke-dashoffset="-92.7"
+                transform="rotate(-90 50 50)"/>
+            </svg>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center">
+              <div style="font-size:20px;font-weight:800;color:#009A44;line-height:1">62%</div>
+              <div style="font-size:9px;font-weight:600;color:#6b7280">NPS</div>
+            </div>
+          </div>
+          <div style="font-size:10px;color:#444;font-weight:600;text-align:center;line-height:1.4">Net Promoter Score<br>(NPS) Annual Result</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="insights-section">
+    <div class="insights-title">Client insights</div>
+    <div class="insights-sub">Key takeaways drawn directly from the Voice of Clients NPS results.</div>
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 3C7.686 3 5 5.686 5 9c0 2.21 1.197 4.14 2.983 5.197L8 16h6l.017-1.803A6 6 0 0011 3z" stroke="#009A44" stroke-width="1.4" fill="none"/><path d="M8 18h6M9 20h4" stroke="#009A44" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="insight-tag tag-strength">Strength</span>
+        </div>
+        <div class="insight-big">62%</div>
+        <div class="insight-bold">Strong advocacy base</div>
+        <div class="insight-desc"><strong>137 of 205 clients</strong> are active Promoters — a strong foundation for referral and repeat engagement.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8.5" stroke="#00AEEF" stroke-width="1.4"/><path d="M11 7v4.5l3 2" stroke="#00AEEF" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="insight-tag tag-highlight">Highlight</span>
+        </div>
+        <div class="insight-big">58</div>
+        <div class="insight-bold">Passive clients — conversion opportunity</div>
+        <div class="insight-desc">58 Neutral responses represent clients who are satisfied but not yet advocates. Targeted engagement could lift NPS further.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="8.5" stroke="#F59E0B" stroke-width="1.4"/><polyline points="7,14 9.5,10 12,12.5 15,8" stroke="#F59E0B" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <span class="insight-tag tag-watch">Watch Area</span>
+        </div>
+        <div class="insight-big">10</div>
+        <div class="insight-bold">Detractors — follow-up priority</div>
+        <div class="insight-desc">Only 10 Detractors (4.9%) — but each one represents a recovery opportunity and potential risk to advocacy.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="page-footer">
+  <span><strong>RSM Albazie &amp; Co.</strong> &nbsp;·&nbsp; Voice of Clients (CX) · 1 July 2024 – 30 June 2025</span>
+  <span>Page 5 — Measuring Client Loyalty: Our Methodology</span>
+</footer>
+
+</body>
+</html>

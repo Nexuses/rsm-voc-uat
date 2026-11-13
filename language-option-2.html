@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Choose your voice host</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--vx-blue:#009CDE;--vx-green:#3F9C35;--vx-green-d:#2E7A26;--vx-mid:#00153D;--vx-dg:#63666A;--vx-mg:#888B8D;--vx-lg:#CCCFCF;--vx-line:#DADCDE}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Prelo','Inter',Calibri,Arial,sans-serif;background:#fff;color:var(--vx-mid);padding:48px 70px}
+
+/* Section header (already on the live page, kept here for context) */
+.vx-section{max-width:1780px;margin:0 auto}
+.vx-badge{display:inline-flex;align-items:center;justify-content:center;width:43px;height:43px;background:var(--vx-mid);color:#fff;font-size:13px;font-weight:800}
+.vx-h2{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:20px 0 14px}
+.vx-sub{font-size:19px;color:var(--vx-dg);margin-bottom:34px}
+.vx-back{display:block;width:max-content;margin:28px auto 0;color:var(--vx-dg);font-weight:700;font-size:15px}
+
+/* Language tiles */
+.vx-tiles{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--vx-line)}
+.vx-tile{position:relative;padding:66px;min-height:528px;display:flex;flex-direction:column;min-width:0;transition:box-shadow .25s}
+.vx-tile + .vx-tile{border-left:1px solid var(--vx-line)}
+.vx-en{background:radial-gradient(110% 90% at 85% 12%,rgba(0,21,61,.07),rgba(0,21,61,0) 60%),#fff}
+.vx-ar{background:radial-gradient(120% 90% at 15% 12%,rgba(63,156,53,.14),rgba(63,156,53,0) 60%),#fff}
+.vx-tile:hover{box-shadow:inset 0 0 0 1px var(--vx-lg)}
+.vx-h3{font-size:34px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.vx-ar .vx-h3{color:var(--vx-green)}
+.vx-body{flex:1;display:flex;align-items:center;justify-content:center;padding:36px 0}
+.vx-desc{font-size:19px;color:var(--vx-dg)}
+.vx-go{margin-top:28px;width:55px;height:55px;border-radius:50%;border:1px solid var(--vx-lg);background:#fff;display:inline-flex;align-items:center;justify-content:center;color:var(--vx-mid);text-decoration:none;transition:background .2s,color .2s,box-shadow .2s,transform .2s}
+.vx-go::after{content:"";position:absolute;inset:0}
+.vx-tile:hover .vx-go{background:var(--vx-mid);color:#fff;box-shadow:0 8px 18px rgba(0,21,61,.2)}
+.vx-ar:hover .vx-go{background:var(--vx-green)}
+.vx-go:focus-visible{outline:2px solid var(--vx-blue);outline-offset:3px}
+
+/* Sample card */
+.vx-card{width:100%;max-width:560px;background:#fff;border:1px solid #E3E5E7;box-shadow:0 12px 32px rgba(0,21,61,.10),0 2px 6px rgba(0,21,61,.06);padding:24px 28px;pointer-events:none}
+.vx-av{width:46px;height:46px;border-radius:50%;background:var(--vx-mid);color:#fff;font-size:19px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.vx-ar .vx-av{background:var(--vx-green)}
+.vx-av.sm{width:26px;height:26px;font-size:13px}
+.vx-chip{display:inline-flex;align-items:center;gap:9px;font-size:15px;font-weight:600;color:var(--vx-dg)}
+.vx-vn{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--vx-dg);font-weight:600}
+.vx-play{pointer-events:auto;position:relative;z-index:2;width:44px;height:44px;border-radius:50%;border:0;background:var(--vx-mid);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:transform .15s,box-shadow .2s}
+.vx-ar .vx-play{background:var(--vx-green)}
+.vx-play:hover{transform:scale(1.06);box-shadow:0 6px 14px rgba(0,21,61,.25)}
+.vx-play:focus-visible{outline:2px solid var(--vx-blue);outline-offset:3px}
+.vx-play .vx-pause{display:none}
+.vx-tile.is-playing .vx-play .vx-pause{display:block}
+.vx-tile.is-playing .vx-play .vx-start{display:none}
+.vx-bars{display:flex;align-items:center;gap:3px;height:34px;flex:1;min-width:0}
+.vx-bars i{display:block;flex:1;max-width:4px;min-width:2px;border-radius:2px;background:var(--vx-lg);transition:background .15s}
+.vx-bars i.on{background:var(--vx-mid)}
+.vx-ar .vx-bars i.on{background:var(--vx-green)}
+.vx-tile.is-playing .vx-bars i{animation:vxbw .7s ease-in-out infinite alternate}
+@keyframes vxbw{from{transform:scaleY(.55)}to{transform:scaleY(1)}}
+
+@media(max-width:900px){
+  body{padding:32px 20px}
+  .vx-h2{font-size:30px}
+  .vx-tiles{grid-template-columns:1fr}
+  .vx-tile{padding:36px 24px;min-height:0}
+  .vx-tile + .vx-tile{border-left:0;border-top:1px solid var(--vx-line)}
+  .vx-h3{font-size:28px}
+}
+@media(prefers-reduced-motion:reduce){
+  .vx-tile.is-playing .vx-bars i{animation:none}
+  .vx-go,.vx-play,.vx-tile{transition:none}
+}
+</style>
+</head>
+<body>
+
+<section class="vx-section">
+  <span class="vx-badge">02</span>
+  <h2 class="vx-h2">Choose your voice host</h2>
+  <p class="vx-sub">Select the language for your voice survey host.</p>
+
+  <!-- Option 2: one-line hello with a voice note
+       To add the real voice sample, set data-sample="/path/to/clip.mp3" on each tile.
+       Without it, the player runs a short demo animation only.
+       Replace the href values on the arrow links with your language routes. -->
+  <div class="vx-tiles">
+
+    <div class="vx-tile vx-en" data-vx-tile data-sample="" lang="en">
+      <h3 class="vx-h3">English</h3>
+      <div class="vx-body"><div class="vx-card"><div style="display:flex;align-items:center;gap:16px;margin-bottom:20px"><span class="vx-av">S</span><p style="font-size:22px;font-weight:600;line-height:1.35">Hello, I’m Sarah.</p></div><div class="vx-vn"><button class="vx-play" type="button" aria-pressed="false" aria-label="Play sample"><svg class="vx-start" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg class="vx-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button><div class="vx-bars" aria-hidden="true"></div><span class="vx-dur">0:08</span></div></div></div>
+      <p class="vx-desc">Talk with our English survey host</p>
+      <a class="vx-go" href="#english" aria-label="Choose English"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+
+    <div class="vx-tile vx-ar" data-vx-tile data-sample="" lang="ar" dir="rtl">
+      <h3 class="vx-h3">Arabic</h3>
+      <div class="vx-body"><div class="vx-card"><div style="display:flex;align-items:center;gap:16px;margin-bottom:20px"><span class="vx-av">س</span><p style="font-size:24px;font-weight:600;line-height:1.35">مرحبًا، أنا سارة.</p></div><div class="vx-vn"><button class="vx-play" type="button" aria-pressed="false" aria-label="تشغيل العينة"><svg class="vx-start" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg><svg class="vx-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button><div class="vx-bars" aria-hidden="true"></div><span class="vx-dur">0:08</span></div></div></div>
+      <p class="vx-desc">تحدث مع مضيف الاستبيان باللغة العربية</p>
+      <a class="vx-go" href="#arabic" aria-label="اختر العربية"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
+    </div>
+
+  </div>
+
+  <a class="vx-back" href="#back">Back</a>
+</section>
+
+<script>
+(function () {
+  var BARS = 28, DEMO_MS = 8000;
+  var tiles = Array.prototype.slice.call(document.querySelectorAll('[data-vx-tile]'));
+  var active = null;
+
+  function fmt(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+
+  tiles.forEach(function (tile) {
+    var btn = tile.querySelector('.vx-play');
+    var wrap = tile.querySelector('.vx-bars');
+    var dur = tile.querySelector('.vx-dur');
+    var src = tile.getAttribute('data-sample');
+    var audio = null, raf = null, t0 = 0, bars = [];
+
+    for (var i = 0; i < BARS; i++) {
+      var b = document.createElement('i');
+      b.style.height = (6 + Math.round(Math.abs(Math.sin(i * 0.9)) * 22)) + 'px';
+      wrap.appendChild(b);
+      bars.push(b);
+    }
+
+    function paint(p) { bars.forEach(function (b, i) { b.classList.toggle('on', i < Math.round(p * BARS)); }); }
+
+    function end() {
+      cancelAnimationFrame(raf);
+      tile.classList.remove('is-playing');
+      btn.setAttribute('aria-pressed', 'false');
+      if (audio) { audio.pause(); audio.currentTime = 0; }
+      paint(0);
+      if (active === api) active = null;
+    }
+
+    function tick() {
+      var p = audio && audio.duration ? audio.currentTime / audio.duration : (performance.now() - t0) / DEMO_MS;
+      paint(Math.min(p, 1));
+      if (p >= 1) { end(); return; }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (active && active !== api) active.stop();
+      active = api;
+      tile.classList.add('is-playing');
+      btn.setAttribute('aria-pressed', 'true');
+      t0 = performance.now();
+      if (src) {
+        audio = audio || new Audio(src);
+        audio.onloadedmetadata = function () { dur.textContent = fmt(audio.duration); };
+        audio.onended = end;
+        audio.currentTime = 0;
+        var pr = audio.play();
+        if (pr && pr.catch) pr.catch(function () { audio = null; t0 = performance.now(); });
+      }
+      raf = requestAnimationFrame(tick);
+    }
+
+    var api = { stop: end };
+    btn.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      if (tile.classList.contains('is-playing')) end(); else start();
+    });
+  });
+})();
+</script>
+</body>
+</html>

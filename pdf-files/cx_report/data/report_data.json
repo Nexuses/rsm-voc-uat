@@ -1,0 +1,56 @@
+{
+  "_note": "PLACEHOLDER SAMPLE DATA. Replace every value with live production data. Brand copy in firm text: RSM in Kuwait.",
+  "period": {
+    "start_date": "2025-07-01",
+    "end_date": "2026-06-30"
+  },
+  "responses": {
+    "surveys_sent": 500,
+    "received": 400,
+    "prev_received": 300,
+    "prev_response_rate_pct": 70
+  },
+  "csat": {
+    "very_satisfied": 220,
+    "satisfied": 120,
+    "neutral": 40,
+    "dissatisfied": 20,
+    "prev_pct": 82,
+    "target_pct": 97
+  },
+  "nps": {
+    "promoters": 210,
+    "neutral": 130,
+    "detractors": 60,
+    "prev_score": 35,
+    "target": 70
+  },
+  "ces": {
+    "rating_7": 90,
+    "rating_6": 110,
+    "rating_5": 80,
+    "rating_4": 60,
+    "rating_3": 30,
+    "rating_2": 20,
+    "rating_1": 10,
+    "prev_score": 4.9,
+    "target": 5.0
+  },
+  "testimonials": [
+    {
+      "quote": "Placeholder testimonial one. Replace with a published quote that has client consent.",
+      "name": "Sample Name A",
+      "company": "Sample Company A"
+    },
+    {
+      "quote": "Placeholder testimonial two. The team was responsive and clear throughout the engagement.",
+      "name": "Sample Name B",
+      "company": "Sample Company B"
+    },
+    {
+      "quote": "Placeholder testimonial three, written by a client about RSM in Kuwait.",
+      "company": "Sample Company C"
+    }
+  ],
+  "text_overrides": {}
+}

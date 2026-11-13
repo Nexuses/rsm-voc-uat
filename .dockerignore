@@ -1,0 +1,12 @@
+.git
+.next
+node_modules
+coverage
+.env
+.env.local
+.env.docker
+*.log
+.vscode
+.cursor
+backups
+tmp

@@ -1,0 +1,1 @@
+export { useDashboardInsights } from "./DashboardInsightsProvider";

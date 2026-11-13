@@ -1,0 +1,45 @@
+{
+  "_note": "EXAMPLE DATA for the short CX report (values mirror the October 2026 sample). Replace with production data.",
+  "period": {
+    "start_date": "2026-10-01",
+    "end_date": "2026-10-31"
+  },
+  "responses": {
+    "surveys_sent": 30,
+    "received": 10,
+    "prev_received": 0,
+    "prev_response_rate_pct": 0
+  },
+  "csat": {
+    "very_satisfied": 5,
+    "satisfied": 4,
+    "neutral": 1,
+    "dissatisfied": 0,
+    "prev_pct": 0,
+    "target_pct": 97
+  },
+  "nps": {
+    "promoters": 5,
+    "neutral": 3,
+    "detractors": 1,
+    "prev_score": 0,
+    "target": 70
+  },
+  "ces": {
+    "rating_7": 2,
+    "rating_6": 4,
+    "rating_5": 3,
+    "rating_4": 1,
+    "rating_3": 0,
+    "rating_2": 0,
+    "rating_1": 0,
+    "prev_score": 0,
+    "target": 5.0
+  },
+  "followup": {
+    "raised": 1,
+    "closed": 0
+  },
+  "comments_summary": "Example comment summary. Replace with a short, factual summary of client comments for the period.",
+  "text_overrides": {}
+}

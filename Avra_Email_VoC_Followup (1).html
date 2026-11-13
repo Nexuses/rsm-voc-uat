@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AVRA · Voice of Client — Follow-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --green:    #3F9C35;
+  --blue:     #009CDE;
+  --dark-grey:#63666A;
+  --mid-grey: #888B8D;
+  --white:    #FFFFFF;
+  --border:   #DDE1E8;
+  --off-wh:   #F7F9FC;
+
+  --font-body: "DM Sans", "Calibri", Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: #E8ECF3;
+  min-height: 100vh;
+  padding: 48px 20px 72px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 660px;
+  margin: 0 auto;
+}
+
+.email-card {
+  background: var(--white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(0,21,61,.04),
+    0 8px 24px rgba(0,21,61,.08),
+    0 32px 64px rgba(0,21,61,.06);
+}
+
+/* ── Top logo image ── */
+.top-logo img {
+  width: 100%;
+  display: block;
+}
+
+.theme-strip {
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(90deg, #009CDE 0%, #3F9C35 100%);
+  display: block;
+}
+
+/* ── BODY ── */
+.body {
+  padding: 36px 38px 10px;
+}
+
+p {
+  font-size: 15px;
+  color: var(--dark-grey);
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+
+/* ── CTA button ── */
+.cta-wrap {
+  margin: 28px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cta-btn {
+  display: inline-block;
+  background: var(--blue);
+  color: var(--white);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: 15px 40px;
+  border-radius: 7px;
+}
+
+/* ── Sign-off ── */
+.signoff {
+  padding: 24px 0 28px;
+  border-top: 1px solid var(--border);
+  margin-top: 28px;
+}
+.signoff .regards {
+  font-size: 14px;
+  color: var(--mid-grey);
+  margin-bottom: 4px;
+}
+.signoff .from-name {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--dark-grey);
+}
+
+/* ── Disclaimer ── */
+.disclaimer {
+  padding: 16px 38px;
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--mid-grey);
+  border-top: 1px solid var(--border);
+  background: var(--off-wh);
+}
+
+/* ── Footer image ── */
+.footer-img img {
+  width: 100%;
+  display: block;
+}
+
+@media (max-width: 560px) {
+  body { padding: 24px 12px 56px; }
+  .body { padding-left: 24px; padding-right: 24px; }
+  .disclaimer { padding-left: 24px; padding-right: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="email-card">
+
+    <!-- Logo -->
+    <div class="top-logo">
+      <img src="https://ik.imagekit.io/urudrjyfz9/ESG%20Webinar%20Invitation.png" alt="Logo" />
+    </div>
+
+    <div class="theme-strip" role="presentation" aria-hidden="true"></div>
+
+    <!-- BODY -->
+    <div class="body">
+
+      <p>Dear [Client Name],</p>
+      <p>We wanted to follow up on our earlier message regarding the Voice of Client assessment. If you have not yet had the opportunity to share your feedback, we would appreciate a few minutes of your time.</p>
+      <p>Your responses help us understand your experience and identify areas where we can improve.</p>
+
+      <div class="cta-wrap">
+        <a href="#" class="cta-btn">Share Your Feedback</a>
+      </div>
+
+      <p>If you have already completed the assessment, thank you — we appreciate your time.</p>
+
+      <div class="signoff">
+        <p class="regards">Best regards,</p>
+        <p class="from-name">RSM in Kuwait</p>
+      </div>
+
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      RSM Albazie &amp; Co. is a member of the RSM network and trades as RSM. RSM is the trading name used by the members of the RSM network. Each member of the RSM network is an independent assurance, tax and consulting firm each of which practices in its own right. The RSM network is not itself a separate legal entity of any description in any jurisdiction. The RSM network is administered by RSM International Limited, a company registered in England and Wales (company number 4040598) whose registered office is at 200 Aldersgate Street, London, EC1A 4HD, United Kingdom. The brand and trademark RSM and other intellectual property rights used by members of the Network are owned by RSM International Association, an association governed by article 60 et seq of the Civil Code of Switzerland whose seat is in Zug. © RSM Albazie &amp; Co., 2026
+    </div>
+
+    <!-- Footer image -->
+    <div class="footer-img">
+      <img src="https://ik.imagekit.io/urudrjyfz9/footer.png" alt="RSM Footer" />
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

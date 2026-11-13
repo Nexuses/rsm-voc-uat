@@ -1,0 +1,69 @@
+Owner,Status,Area,Function,Client does not have to,Still with the client
+Nexuses,Live,Survey,Public survey page in English and Arabic (Arabic reads right to left),Build or host a survey website,Approve the question wording
+Nexuses,Live,Survey,Voice survey: signed ElevenLabs session English or Arabic host and the call ends itself,Build a voice agent or a phone system,ElevenLabs account and billing if RSM takes over hosting
+Nexuses,Live,Survey,"Typed survey: name, email, company, designation, CSAT, CES, NPS, and an optional comment on each",Build the form and its checks,
+Nexuses,Live,Survey,Save each response once and keep the full raw voice payload,Write storage dedupe or webhook handling,
+Nexuses,Live,Survey,"Score CSAT, CES, and NPS on their own scales (they are never averaged together)",Design scoring for these three questions,
+Nexuses,Live,Survey,"Mark the survey Positive, Neutral, or Negative from the worst of the three scores",Write that result rule,
+Nexuses,Live,Survey,Keep a partial voice answer and leave a missing score out of that metric,Handle dropped calls,
+Nexuses,Live,Survey,In the KPIs keep only the latest response from the same email in a calendar quarter,Deduplicate repeat submissions,
+Nexuses,Live,Survey,"Stop abusive posts (allowed website only, rate limit, hidden honeypot field)",Add bot protection,
+Nexuses,Live,Invites,Send a branded invite from the dashboard to one person or a CSV list,Build an invite mailer,Supply the recipient list and a verified sender address
+Nexuses,Live,Invites,Give every recipient their own tracked survey link,Generate and store link tokens,
+Nexuses,Live,Invites,"Store department, service, partner, business manager, job manager, their emails, team leader, and project id on the invite",Build engagement fields on the survey,Provide the real names and project ids
+Nexuses,Live,Invites,Suggest staff and services from a directory and add a new name the next time it is used,Keep a separate name list in code,Keep the directory accurate in Settings
+Nexuses,Live,Invites,"Record sent, opened, started, and completed",Build open and completion tracking,
+Nexuses,Live,Invites,"Invite tracker: status, history, notes, a manual reminder, CSV and Excel export, and admin delete",Build a follow-up log,
+Nexuses,Live,Invites,"Send automatic reminders on days 3, 6, 9, and 12, then stop",Write a reminder schedule,Keep the server schedule that calls this job
+Nexuses,Live,Invites,Email a thank-you with the three scores to someone who was invited,Write the client receipt,
+Nexuses,Live,Invites,"Email the internal team on every completion (Kuwait time, client column, RSM team column, copy partner and managers, not the team leader)",Design and send the team notice,Name the mailbox that receives it
+Nexuses,Live,Invites,Send a second action-required email when the result is Negative,Write the low-score alert,Same mailbox
+Nexuses,Live,Invites,Email weekly monthly and quarterly packs as CSV and Excel,Schedule management reports,Same mailbox and the server schedule
+Nexuses,Live,Invites,Retry a failed SendGrid send,Build mail retry,
+Nexuses,Live,CRM boundary,Accept a server-to-server request to send an invite and return the survey link and the private result link,Build the survey-sending service,Build the CRM step that calls this API (opportunity budget or billing)
+Nexuses,Live,CRM boundary,"After CSAT, CES, and NPS are all present, post the completion payload to the CRM address",Build the score payload,Own the Power Automate flow that receives it
+Nexuses,Live,Dashboard,Sign in with a password and an email code,Build login,Single sign-on is not in the product
+Nexuses,Live,Dashboard,"Roles for admin, CX, and surveyor, plus custom roles",Build access control,Decide who gets which role
+Nexuses,Live,Dashboard,"Audit log of logins, sends, and role changes",Build that activity log,
+Nexuses,Live,Dashboard,A user can change their own password,Build password change,
+Nexuses,Live,Dashboard,"Overview of scores, volume, trends, distributions, themes, sentiment, and risk",Build the executive view,
+Nexuses,Live,Dashboard,"Separate CSAT, NPS, and CES report pages",Build three metric reports,
+Nexuses,Live,Dashboard,"Filter by period, company, person, department, service, partner, and manager",Build those filters,
+Nexuses,Live,Dashboard,"Response list, grouping of repeats, CSV and Excel export, and admin exclude or delete",Build the response ledger,
+Nexuses,Live,Dashboard,Open one response and read the scores plus the voice turns,Build a transcript view,
+Nexuses,Live,Dashboard,Download the overview as a PDF,Build PDF export,
+Nexuses,Live,Dashboard,Ask Your Data chat that cites the feedback it used and can include invite totals,Build a feedback search assistant,
+Nexuses,Live,Dashboard,Copy the embed code for the public widgets,Build an embed helper,
+Nexuses,Live,Dashboard,Warn on the dashboard when voice credits are low,Watch the ElevenLabs balance by hand,
+Nexuses,Live,Public site,Public score API that never returns email or phone,Build a public metrics feed,
+Nexuses,Live,Public site,"Embeddable CSAT, CES, and NPS widget",Build the widget,Paste the snippet on the RSM website if it should appear there
+Nexuses,Live,Public site,"Recent-reviews widget (comment, optional name and company, never email or phone)",Build a reviews showcase,
+Nexuses,Live,Public site,Public experience report page,Build a public report,
+Nexuses,Live,Public site,Private result page for one invite (link token not a public page),Build a per-person result page,
+Nexuses,Live,Trust,Check the ElevenLabs signature before saving a call,Secure the webhook,
+Nexuses,Live,Trust,Public pages read only the sanitized score tables,Enforce that privacy split,
+Nexuses,"Built, switched off",Expansion,Draft and publish survey versions,Build a survey builder,The live survey is still the fixed three questions until a published version is served
+Nexuses,"Built, switched off",Expansion,Store weighted score definitions,Build a weight engine,Weights are not applied to the live survey yet
+Nexuses,"Built, switched off",Expansion,"Recovery cases with owner, notes, SLA, escalation, and client confirmation",Build a case module,Auto-open only records the decision until the switch is turned on; the screen is not in the menu
+Nexuses,"Built, switched off",Expansion,"Automation rules, English and Arabic templates, and approval before a message sends",Build a workflow engine,Stays off until a rule a template and the send switch are on
+Nexuses,"Built, switched off",Expansion,Account health score,Build a health model,RSM still confirms the weights; the daily job is off
+Nexuses,"Built, switched off",Expansion,Record revenue against an account by hand,Build revenue storage,
+Nexuses,"Built, switched off",Expansion,Show service lines a client has not been surveyed on,Build coverage-gap logic,
+Nexuses,"Built, switched off",Expansion,Draft an AI account summary that a person must approve before it is used,Build that summary workflow,
+Nexuses,"Built, switched off",Expansion,Training courses and assignments when scores stay low,Build a training module,The switch is off and RSM still confirms the thresholds
+Nexuses,"Built, switched off",Expansion,Keep internal and external benchmarks separate,Build a benchmark store,
+Nexuses,"Built, switched off",Expansion,Issue extra inbound API keys and store only a hash,Build key management,
+Nexuses,"Built, switched off",Expansion,Limit a user to selected accounts,Build data-scope rules,Not yet applied on every dashboard page
+Nexuses,"Built, switched off",Operations,Background jobs feature switches and a way to replay a failed job,Build a job queue,
+Nexuses,"Built, switched off",Operations,Weekly database backup program that uploads a dump,Build the backup tool,The weekly schedule on the server is not installed yet
+RSM,RSM keeps,CRM,Decide when a survey is sent (opportunity won budget percent or final billing),,Platform does not watch project budget
+RSM,RSM keeps,CRM,Power Automate flow that calls the invite API and receives the completion post,,Platform exposes the API; it does not replace CRM
+RSM,RSM keeps,Content,Approve the survey questions and the Arabic wording,,Platform will not invent copy
+RSM,RSM keeps,Content,"Staff names, emails, departments, and the internal notification mailbox",,Platform stores what RSM enters
+RSM,RSM keeps,Access,Decide who may use the dashboard,,Platform enforces the roles RSM assigns
+RSM,RSM keeps,Hosting,Vendor accounts if RSM hosts the app: OpenAI ElevenLabs SendGrid domain server and database,,Nexuses-managed production still uses Nexuses accounts until handover
+RSM,RSM keeps,Hosting,"DNS, certificate, and the server schedules for reminders, reports, and backups",,The jobs themselves are in the platform
+RSM,RSM keeps,Website,Place the widget snippet on the RSM public website if it should show there,,The widget itself is in the platform
+RSM,RSM keeps,Compliance,Decide whether OpenAI processing meets data-residency rules,,
+RSM,RSM keeps,Access,Single sign-on if RSM requires it,,Not in the product
+RSM,RSM keeps,Cases,A login where the respondent confirms an issue is resolved,,Not a live client portal

@@ -1,0 +1,64 @@
+{
+  "type": "post_call_transcription",
+  "event_timestamp": 1781168400,
+  "data": {
+    "agent_id": "agent_fixture",
+    "agent_name": "RSM Voice of Client",
+    "conversation_id": "conv_fixture_step5",
+    "status": "done",
+    "has_audio": true,
+    "has_user_audio": true,
+    "has_response_audio": true,
+    "transcript": [
+      {
+        "role": "agent",
+        "message": "Thank you for sharing your feedback.",
+        "time_in_call_secs": 0
+      },
+      {
+        "role": "user",
+        "message": "The team was responsive, but the filing took longer than expected.",
+        "time_in_call_secs": 4
+      }
+    ],
+    "metadata": {
+      "start_time_unix_secs": 1781168400,
+      "call_duration_secs": 360
+    },
+    "analysis": {
+      "data_collection_results": {
+        "client_name": {
+          "value": "Fixture Contact",
+          "rationale": "Provided during the fixture conversation"
+        },
+        "client_company": {
+          "value": "Fixture Company"
+        },
+        "client_designation": {
+          "value": "Finance Director"
+        },
+        "language": {
+          "value": "en"
+        },
+        "q1_rating": {
+          "value": 4
+        },
+        "q1_reason": {
+          "value": "The team was responsive."
+        },
+        "q2_rating": {
+          "value": 2
+        },
+        "q2_reason": {
+          "value": "The filing took longer than expected."
+        },
+        "q3_rating": {
+          "value": 8
+        },
+        "q3_reason": {
+          "value": "The technical advice was helpful."
+        }
+      }
+    }
+  }
+}

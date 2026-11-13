@@ -1,0 +1,88 @@
+.page {
+  --navy: #00153d;
+  --body: #63666a;
+  --line: #d1d3d4;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 48px 20px 64px;
+  color: #231f20;
+  font-family: Prelo, sans-serif;
+  background: #f6f6f6;
+  min-height: 100vh;
+}
+
+.header h1 {
+  margin: 8px 0 12px;
+  color: var(--navy);
+  font-size: 1.75rem;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #009cde;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  color: var(--body);
+  font-size: 0.9rem;
+}
+
+.scores {
+  display: grid;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.card {
+  padding: 20px 22px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.card h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 0.95rem;
+}
+
+.score {
+  margin: 10px 0;
+  color: var(--navy);
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.score small {
+  margin-left: 4px;
+  color: var(--body);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.question,
+.comment {
+  margin: 8px 0 0;
+  color: var(--body);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.comment {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: #231f20;
+  font-style: italic;
+}
+
+.footer {
+  margin-top: 32px;
+  color: #919093;
+  font-size: 0.8rem;
+}

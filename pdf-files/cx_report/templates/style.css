@@ -1,0 +1,42 @@
+@font-face{font-family:'Prelo 1 Light';src:url('fonts/Prelo_1_Light.ttf')}
+@font-face{font-family:'Prelo 1 Medium';src:url('fonts/Prelo_1_Medium.ttf')}
+@font-face{font-family:'Prelo 1 Semi-Bold';src:url('fonts/Prelo_1_Semi-Bold.ttf')}
+@font-face{font-family:'Prelo 1 Bold';src:url('fonts/Prelo_1_Bold.ttf')}
+@font-face{font-family:'Prelo 1 Ultra-Bold';src:url('fonts/Prelo_1_Ultra-Bold.ttf')}
+@font-face{font-family:'Prelo 2 Light';src:url('fonts/Prelo_2_Light.ttf')}
+@font-face{font-family:'Prelo 2 Semi-Bold';src:url('fonts/Prelo_2_Semi-Bold.ttf')}
+@font-face{font-family:'Prelo 2 Bold';src:url('fonts/Prelo_2_Bold.ttf')}
+@font-face{font-family:'Prelo 3 Heavy';src:url('fonts/Prelo_3_Heavy.ttf')}
+@page{size:595pt 842pt;margin:0}
+html,body{margin:0;padding:0;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}
+.page{position:relative;width:595pt;height:842pt;overflow:hidden;break-after:page;page-break-after:always}
+.page:last-child{break-after:auto;page-break-after:auto}
+.plate{position:absolute;left:0;top:0;width:595pt;height:842pt}
+.tb{position:absolute;display:flex;flex-direction:column;box-sizing:border-box}
+.tb p{margin:0;line-height:1.25}
+svg{display:block}
+.abs{position:absolute}
+/* delta pills / arrows */
+.pill{position:absolute;display:flex;align-items:center;justify-content:center;gap:3pt;height:14.3pt;border-radius:2pt;font:9.2pt 'Prelo 1 Light';white-space:nowrap;box-sizing:border-box}
+.dl{position:absolute;display:flex;align-items:center;justify-content:flex-end;gap:2.5pt;font:9.95pt 'Prelo 1 Light';color:#000;white-space:nowrap}
+/* bars */
+.sbar{position:absolute;display:flex;height:19.5pt}
+.sbar div{display:flex;align-items:center;justify-content:center;color:#fff;font:12pt 'Prelo 1 Light';box-sizing:border-box}
+/* page-4 mini cards */
+.mc{position:absolute}
+.mc .card{position:absolute;inset:0;background:#fff;border-radius:7pt;box-shadow:0 2pt 7pt rgba(0,0,0,.16)}
+.mc .tag{position:absolute;left:-8pt;top:-10pt;padding:3pt 8pt 3pt;border-radius:4pt;color:#fff;box-shadow:0 2pt 6pt rgba(0,0,0,.2);text-align:center;font-family:'Prelo 1 Bold'}
+.mc .tag b{display:block;font:15pt/1 'Prelo 1 Bold'}
+.mc .tag span{display:block;font:7pt/1.1 'Prelo 1 Medium'}
+.mc .col{position:absolute;display:flex;flex-direction:column;align-items:center;font-family:'Prelo 1 Bold';text-align:center}
+.mc .col .n{font-size:7pt;line-height:1}
+.mc .col .lab{font:3.8pt/1.15 'Prelo 1 Medium';color:#63666A;margin-top:2pt}
+/* testimonials */
+.tq{position:absolute;left:32.3pt;width:530.9pt;box-sizing:border-box;padding:24.8pt 35pt 21.8pt 35pt;text-align:center;color:#fff}
+.tq .ln{position:absolute}
+.tq .q{font:12pt/16.7pt 'Prelo 1 Light';margin:0}
+.tq .who{font:14pt/21.9pt 'Prelo 1 Bold';color:#3F9C35;margin:8.2pt 0 0}
+.tq .co{font:12pt/17.1pt 'Prelo 1 Light';margin:0}
+.tq .mk{position:absolute;display:block;width:47.6pt;height:123.3pt;font:80.21pt/112.3pt 'Prelo 3 Heavy';text-align:left}
+
+.note b{font-family:'Prelo 1 Bold';font-weight:normal}

@@ -1,0 +1,91 @@
+{
+  "_note": "EXAMPLE DATA mirroring the layout sample. Replace with the logged-in partner's own production data.",
+  "period": {
+    "start_date": "2025-10-29",
+    "end_date": "2026-10-28"
+  },
+  "responses": {
+    "surveys_sent": 45,
+    "received": 14,
+    "prev_received": 0,
+    "prev_response_rate_pct": 0
+  },
+  "csat": {
+    "very_satisfied": 6,
+    "satisfied": 5,
+    "neutral": 2,
+    "dissatisfied": 1,
+    "prev_pct": 0,
+    "target_pct": 97
+  },
+  "nps": {
+    "promoters": 6,
+    "neutral": 4,
+    "detractors": 2,
+    "prev_score": 0,
+    "target": 70
+  },
+  "ces": {
+    "rating_7": 4,
+    "rating_6": 4,
+    "rating_5": 2,
+    "rating_4": 2,
+    "rating_3": 1,
+    "rating_2": 0,
+    "rating_1": 0,
+    "prev_score": 0,
+    "target": 5.0
+  },
+  "followup": {
+    "raised": 4,
+    "closed": 3
+  },
+  "partner": {
+    "name": "Sample Partner",
+    "with_comment": 12,
+    "comment_total": 12,
+    "min_theme": 2,
+    "contact": {
+      "email": "connect@rsm.com.kw",
+      "phone": "+965 22961000"
+    },
+    "value_themes": [
+      {
+        "title": "Responsiveness and clear communication",
+        "count": 3,
+        "text": "Clients note prompt replies and clear updates at each stage.",
+        "quote": "Quick to respond and clear in explanations."
+      },
+      {
+        "title": "Technical knowledge of the sector",
+        "count": 3,
+        "text": "Clients note familiarity with their sector and practical advice.",
+        "quote": "The team knows our sector well and the advice was practical."
+      }
+    ],
+    "improve_themes": [
+      {
+        "title": "Clarity on scope, timelines and fees at the start",
+        "count": 3,
+        "text": "Some clients would welcome earlier clarity on scope and fees.",
+        "quote": "Would like earlier clarity on timelines at the start."
+      },
+      {
+        "title": "Turnaround during peak periods",
+        "count": 2,
+        "text": "Some clients experienced slower responses during busy periods."
+      }
+    ],
+    "focus": [
+      {
+        "title": "Confirm scope, timelines and fees early",
+        "text": "We aim to set expectations at kick-off and add a mid-engagement check-in."
+      },
+      {
+        "title": "Maintain responsiveness at busy periods",
+        "text": "We aim to keep clients updated on progress and next actions."
+      }
+    ]
+  },
+  "text_overrides": {}
+}

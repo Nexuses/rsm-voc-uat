@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RSM VOC Widget Preview</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: Prelo, sans-serif;
+        background: #f4f6f8;
+        color: #00153d;
+      }
+      .preview-toolbar {
+        max-width: 1040px;
+        margin: 0 auto 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 12px 16px;
+        padding: 14px 16px;
+        background: #fff;
+        border: 1px solid #d1d3d4;
+        border-radius: 8px;
+      }
+      .preview-toolbar label {
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #63666a;
+      }
+      .preview-toolbar select {
+        min-width: 160px;
+        padding: 8px 10px;
+        border: 1px solid #d1d3d4;
+        border-radius: 6px;
+        font: inherit;
+      }
+      .preview-toolbar p {
+        margin: 0;
+        flex: 1 1 220px;
+        font-size: 12px;
+        color: #63666a;
+        line-height: 1.45;
+      }
+      .preview-mount {
+        max-width: 1040px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <form class="preview-toolbar" id="preview-controls">
+      <label>
+        Metric view
+        <select name="metric" id="metric-select">
+          <option value="all">All metrics</option>
+          <option value="csat">CSAT only</option>
+          <option value="ces">CES only</option>
+          <option value="nps">NPS only</option>
+        </select>
+      </label>
+      <p>
+        Live preview of <code>public/widget.js</code>. The backup at
+        <code>/widget-backup.html</code> still shows the original design.
+      </p>
+    </form>
+
+    <div class="preview-mount">
+      <div id="rsm-voc-metrics"></div>
+    </div>
+
+    <script>
+      (function () {
+        var LOADER_ID = "rsm-voc-widget-loader-preview";
+        var form = document.getElementById("preview-controls");
+        var select = document.getElementById("metric-select");
+
+        function loadWidget(metric) {
+          document.getElementById(LOADER_ID)?.remove();
+          var mount = document.getElementById("rsm-voc-metrics");
+          mount.innerHTML =
+            '<div class="rsm-voc-loading" role="status">Loading preview...</div>';
+
+          var script = document.createElement("script");
+          script.id = LOADER_ID;
+          script.src = "/widget.js";
+          script.setAttribute("data-api", "/api/public/metrics");
+          script.setAttribute("data-metric", metric);
+          script.setAttribute("data-target", "rsm-voc-metrics");
+          document.body.appendChild(script);
+        }
+
+        form.addEventListener("change", function () {
+          loadWidget(select.value);
+        });
+
+        loadWidget(select.value);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: Regenerate Playwright screenshot baselines (Ubuntu/Chromium)
+        type: boolean
+        default: false
+
+# Snapshot baselines are OS-sensitive. Prefer regenerating on this Ubuntu job:
+#   Actions → CI → Run workflow → update_snapshots=true → download e2e-snapshots artifact
+# Or with Docker (linux/amd64 to match GHA):
+#   ./scripts/update-e2e-snapshots.sh
+# Failed visual runs also upload test-results/ with actual screenshots.
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+  visual:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-jammy
+
+    env:
+      CI: "true"
+      HOME: /root
+      NEXTAUTH_SECRET: playwright-ci-nextauth-secret
+      NEXTAUTH_URL: http://127.0.0.1:3000
+      DATABASE_URL: postgresql://rsm_voc:rsm_voc@127.0.0.1:5432/rsm_voc?schema=public
+      ELEVENLABS_API_KEY: test-el-key
+      ELEVENLABS_AGENT_ID: agent_test
+      ELEVENLABS_WEBHOOK_SECRET: whsec_test
+      OPENAI_API_KEY: sk-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run visual and survey e2e tests
+        if: ${{ github.event.inputs.update_snapshots != 'true' }}
+        run: npm run test:e2e
+
+      - name: Update screenshot baselines
+        if: ${{ github.event.inputs.update_snapshots == 'true' }}
+        run: npm run test:e2e:update
+
+      - name: Upload updated snapshots
+        if: ${{ github.event.inputs.update_snapshots == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-snapshots
+          path: tests/e2e/**/*-snapshots/
+          retention-days: 14
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+      - name: Upload received screenshot baselines
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-snapshot-actuals
+          path: test-results/**/*-actual.png
+          retention-days: 14
+          if-no-files-found: ignore

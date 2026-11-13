@@ -1,0 +1,80 @@
+.privacy {
+  --notice-text: #63666a;
+  --notice-green: #3f9c35;
+  --notice-blue: #009cde;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 18px clamp(20px, 5vw, 56px);
+  color: var(--notice-text);
+  text-align: center;
+}
+
+.privacy p {
+  /* Let the statement use the available width instead of sitting in a narrow
+     column. The copy needs ~752px at this size, so it settles on one line on
+     desktop and two on tablet/mobile — never more than two. */
+  width: 100%;
+  max-width: min(100%, 60rem);
+  margin: 0 auto;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.icon {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-inline-end: 0.35em;
+  vertical-align: -0.12em;
+  color: var(--notice-green);
+}
+
+.link {
+  color: var(--notice-blue);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: #575756;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--notice-blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.rtl {
+  direction: rtl;
+}
+
+@media (max-width: 560px) {
+  .privacy {
+    padding: 16px 18px;
+  }
+
+  .privacy p {
+    max-width: none;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+}
+
+/* Very narrow phones: shave the type and inset so the statement still holds
+   two lines instead of spilling onto a third. */
+@media (max-width: 380px) {
+  .privacy {
+    padding: 14px 12px;
+  }
+
+  .privacy p {
+    font-size: 0.71rem;
+  }
+}

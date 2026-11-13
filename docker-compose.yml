@@ -1,0 +1,73 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: rsm-voc-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: rsm_voc
+      POSTGRES_USER: rsm_voc
+      # Override in an untracked `.env` beside this file. The fallback exists so
+      # a local dev checkout still starts; never leave it as-is on a server.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rsm_voc}
+    ports:
+      # Bound to loopback: the app connects over localhost, so there is no
+      # reason to publish Postgres on every interface. Previously this was
+      # "5432:5432", which binds 0.0.0.0 and left the database reachable to
+      # anything that could route to the host.
+      - "127.0.0.1:5432:5432"
+    # Tuned for a small single-VM host that also runs the Next.js app.
+    # Postgres defaults assume it owns the machine: stock effective_cache_size
+    # is 4 GB, which on a 1.8 GB box makes the planner wildly over-optimistic
+    # about what is cached and biases it towards index scans that then hit disk.
+    command:
+      - postgres
+      - -c
+      - shared_buffers=192MB
+      - -c
+      - effective_cache_size=640MB
+      - -c
+      - work_mem=8MB
+      - -c
+      - maintenance_work_mem=96MB
+      - -c
+      - max_connections=50
+      # SSD-backed storage: sequential and random reads cost nearly the same,
+      # and the device can service many concurrent requests.
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - effective_io_concurrency=200
+      # Query statistics, so slow queries can be found rather than guessed at.
+      - -c
+      - shared_preload_libraries=pg_stat_statements
+      - -c
+      - pg_stat_statements.track=all
+      - -c
+      - track_io_timing=on
+      # Smaller, more frequent checkpoints suit a small disk and keep write
+      # spikes from competing with the app for I/O.
+      - -c
+      - max_wal_size=512MB
+      - -c
+      - min_wal_size=128MB
+      - -c
+      - checkpoint_completion_target=0.9
+      - -c
+      - wal_compression=on
+      - -c
+      - log_min_duration_statement=500
+    # Keep Postgres from starving the Next.js workers on a 1.8 GB host.
+    mem_limit: 640m
+    shm_size: 256m
+    volumes:
+      - rsm_voc_postgres_data:/var/lib/postgresql/data
+      - ./docker/db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+volumes:
+  rsm_voc_postgres_data:

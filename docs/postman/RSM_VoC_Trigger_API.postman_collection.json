@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "RSM VoC — Trigger Survey Email",
+    "description": "Send branded RSM Voice of Clients survey invitation emails.\n\nSet collection variables:\n- `baseUrl` — e.g. https://rsm-voc-platform.vercel.app\n- `apiKey` — your SURVEY_INVITE_API_KEY (server-side only)\n\nSee docs/API_TRIGGER_SURVEY_EMAIL.md for full reference.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://rsm-voc-platform.vercel.app"
+    },
+    {
+      "key": "apiKey",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Single recipient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"to\": \"client@example.com\",\n  \"firstName\": \"Ahmed\",\n  \"company\": \"Acme Corp\",\n  \"department\": \"AUDIT\",\n  \"partner\": \"Sriram Gopalakrishnan\",\n  \"projectId\": \"PRJ-2401\",\n  \"externalEngagementId\": \"CRM-ENG-123\",\n  \"triggerStage\": \"mid\",\n  \"idempotencyKey\": \"CRM-ENG-123-mid-client@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/integrations/survey-invites",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "integrations", "survey-invites"]
+        },
+        "description": "Send one tracked survey invitation (mid/post CRM trigger). Response includes surveyUrl and resultLinkUrl."
+      },
+      "response": []
+    },
+    {
+      "name": "Single recipient — post engagement",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"to\": \"client@example.com\",\n  \"firstName\": \"Ahmed\",\n  \"company\": \"Acme Corp\",\n  \"projectId\": \"PRJ-2401\",\n  \"externalEngagementId\": \"CRM-ENG-123\",\n  \"triggerStage\": \"post\",\n  \"idempotencyKey\": \"CRM-ENG-123-post-client@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/integrations/survey-invites",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "integrations", "survey-invites"]
+        },
+        "description": "Second send for the same engagement at 100% budget utilization."
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk — email array",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"subject\": \"RSM in Kuwait — share your feedback\",\n  \"emails\": [\"a@example.com\", \"b@example.com\"]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/integrations/survey-invites",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "integrations", "survey-invites"]
+        },
+        "description": "Send the same invite template to multiple addresses (max 500)."
+      },
+      "response": []
+    },
+    {
+      "name": "Bulk — CSV string",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"csv\": \"email,firstname,lastname,company,department,projectid\\nclient@example.com,Ahmed,Al-Sabah,Acme Corp,AUDIT,PRJ-2401\\nops@company.co,Fahad,Al-Ahmad,Example LLC,TAX,PRJ-2402\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/integrations/survey-invites",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "integrations", "survey-invites"]
+        },
+        "description": "Send invites from inline CSV text with per-recipient metadata."
+      },
+      "response": []
+    }
+  ]
+}

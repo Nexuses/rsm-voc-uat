@@ -1,0 +1,135 @@
+.page {
+  --navy: #00153d;
+  --green: #3f9c35;
+  --blue: #009cde;
+  --charcoal: #231f20;
+  --body-text: #63666a;
+  --border: #d1d3d4;
+  --page-bg: #f6f6f6;
+  --font-brand: Prelo, sans-serif;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  font-family: var(--font-brand);
+  background: var(--page-bg);
+}
+
+.notice {
+  width: min(100%, 34rem);
+  padding: 0 4px;
+}
+
+.card {
+  position: relative;
+  width: min(100%, 24rem);
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--green);
+  border-radius: 4px;
+}
+
+.logoWrap {
+  margin-bottom: 20px;
+}
+
+.logo {
+  display: block;
+  width: auto;
+  height: 34px;
+  max-width: 128px;
+  object-fit: contain;
+}
+
+.card h1 {
+  margin: 0;
+  color: var(--charcoal);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.card p {
+  margin: 8px 0 0;
+  color: var(--body-text);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.autofillTrap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+  white-space: nowrap;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin-top: 20px;
+  color: var(--charcoal);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.field input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  color: var(--charcoal);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgb(63 156 53 / 15%);
+}
+
+.error {
+  margin: 16px 0 0;
+  color: #c8102e;
+  font-size: 0.8125rem;
+}
+
+.submit {
+  width: 100%;
+  height: 40px;
+  margin-top: 24px;
+  color: #fff;
+  background: var(--green);
+  border: 1px solid var(--green);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.submit:hover:not(:disabled) {
+  background: #337c2a;
+  border-color: #337c2a;
+}
+
+.submit:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.loading {
+  color: var(--body-text);
+  font-size: 0.875rem;
+}
